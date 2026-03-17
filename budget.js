@@ -1,5 +1,5 @@
 /* =============================================
-   budget.js  — 予算管理ページ ロジック
+   budget.js  — 予算管理ページ ロジック 完全版
    ============================================= */
 'use strict';
 import { supabase, requireAuth } from './supabase-client.js';
@@ -8,15 +8,21 @@ let currentUser = null;
 const TX_TABLE     = 'transactions';
 const BUDGET_TABLE = 'budgets';
 
+// 過去データ読み取り用の新旧統合定義
 const CATEGORY_BOX = {
   '通信費（A箱）':'A','消耗品費（A箱）':'A','旅費交通費（A箱）':'A','支払手数料（A箱）':'A','接待交際費（A箱）':'A','新聞図書費（A箱）':'A',
   '食費（B箱）':'B', '日用品（B箱）':'B', '趣味・娯楽（B箱）':'B', '自己研鑽（B箱）':'B', '衣服・美容（B箱）':'B', '健康・医療（B箱）':'B', '交際費（B箱）':'B', '交通費（B箱）':'B', '保険（B箱）':'B', '投資（B箱）':'B', 'その他（B箱）':'B',
+  '個人サブスク・通信費（B箱）':'B', '飲食費（ランチ・カフェ）（B箱）':'B', '美容・被服費（B箱）':'B', '趣味・娯楽費（B箱）':'B', '個人交際費・予備費（B箱）':'B',
   '家族生活費（C箱）':'C','租税公課（C箱）':'C','法定福利費（C箱）':'C'
 };
 
+// 予算設定UIの表示リスト（旧項目を末尾に統合）
 const BOX_CATEGORIES = {
   A: ['通信費（A箱）','消耗品費（A箱）','旅費交通費（A箱）','支払手数料（A箱）','接待交際費（A箱）','新聞図書費（A箱）'],
-  B: ['食費（B箱）', '日用品（B箱）', '趣味・娯楽（B箱）', '自己研鑽（B箱）', '衣服・美容（B箱）', '健康・医療（B箱）', '交際費（B箱）', '交通費（B箱）', '保険（B箱）', '投資（B箱）', 'その他（B箱）'],
+  B: [
+    '食費（B箱）', '日用品（B箱）', '趣味・娯楽（B箱）', '自己研鑽（B箱）', '衣服・美容（B箱）', '健康・医療（B箱）', '交際費（B箱）', '交通費（B箱）', '保険（B箱）', '投資（B箱）', 'その他（B箱）',
+    '個人サブスク・通信費（B箱）', '飲食費（ランチ・カフェ）（B箱）', '美容・被服費（B箱）', '趣味・娯楽費（B箱）', '個人交際費・予備費（B箱）'
+  ],
   C: ['家族生活費（C箱）','租税公課（C箱）','法定福利費（C箱）']
 };
 
@@ -28,8 +34,8 @@ let viewMonth = new Date().getMonth() + 1;
 const fmt = n => '¥' + Math.abs(Math.round(n)).toLocaleString('ja-JP');
 function padZ(n) { return String(n).padStart(2,'0'); }
 function monthKey(y,m) { return `${y}-${padZ(m)}`; }
-function showLoading() { document.getElementById('loadingOverlay').classList.remove('hidden'); }
-function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+function showLoading() { document.getElementById('loadingOverlay')?.classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loadingOverlay')?.classList.add('hidden'); }
 function showToast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2500); }
 
 async function fetchAll(table) {
@@ -94,6 +100,10 @@ function renderBudgetList(box) {
     const actual = actuals[cat] || 0;
     const budRow = budgets.find(b => b.month === key && b.box === box && b.category === cat);
     const budAmt = budRow ? Number(budRow.amount) : 0;
+
+    // 実績も予算も0の旧項目は表示を省略し、画面をクリーンに保つ
+    if (actual === 0 && budAmt === 0 && cat.length > 8) return; 
+
     const hasBud = budAmt > 0;
     const pct = hasBud ? Math.min((actual/budAmt)*100, 150) : 0;
     const status = !hasBud ? 'na' : pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
