@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#4f46e5" />
+  <title>収支入力 | マイ家計簿</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="form.css" />
+</head>
+<body>
+  <header class="form-header">
+    <div class="form-header-inner">
+      <a href="index.html" class="header-back-btn"><i class="fas fa-chart-pie"></i><span>ダッシュボード</span></a>
+      <div class="header-title"><i class="fas fa-pen-alt"></i><span>収支入力</span></div>
+      <div class="header-date" id="headerDate"></div>
+    </div>
+  </header>
+
+  <main class="form-main">
+    <div class="step-indicator">
+      <div class="step active" id="step1Dot"><div class="step-dot"><span>1</span></div><div class="step-label">入力</div></div>
+      <div class="step-line"></div>
+      <div class="step" id="step2Dot"><div class="step-dot"><span>2</span></div><div class="step-label">確認</div></div>
+      <div class="step-line"></div>
+      <div class="step" id="step3Dot"><div class="step-dot"><span>3</span></div><div class="step-label">完了</div></div>
+    </div>
+
+    <div class="step-panel active" id="panelInput">
+      <div class="form-card">
+        <div class="quick-balance" id="quickBalance">
+          <div class="qb-item"><i class="fas fa-university"></i><span class="qb-label">銀行</span><span class="qb-val bank-color" id="qbBank">¥—</span></div>
+          <div class="qb-divider"></div>
+          <div class="qb-item"><i class="fas fa-money-bill-wave"></i><span class="qb-label">現金</span><span class="qb-val cash-color" id="qbCash">¥—</span></div>
+          <div class="qb-divider"></div>
+          <div class="qb-item"><i class="fas fa-coins"></i><span class="qb-label">合計</span><span class="qb-val total-color" id="qbTotal">¥—</span></div>
+        </div>
+
+        <form id="inputForm" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="inputDate"><i class="fas fa-calendar-day"></i> 日付</label>
+            <input type="date" id="inputDate" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-exchange-alt"></i> 収支区分</label>
+            <div class="type-group">
+              <label class="type-btn income-type"><input type="radio" name="txType" value="income" /><span><i class="fas fa-arrow-down"></i><br>収入</span></label>
+              <label class="type-btn expense-type"><input type="radio" name="txType" value="expense" checked /><span><i class="fas fa-arrow-up"></i><br>支出</span></label>
+              <label class="type-btn transfer-type"><input type="radio" name="txType" value="transfer" /><span><i class="fas fa-random"></i><br>ATM</span></label>
+            </div>
+          </div>
+
+          <div class="form-group" id="categoryGroup">
+            <label class="form-label" for="inputCategory"><i class="fas fa-tag"></i> 勘定科目</label>
+            <select id="inputCategory" class="form-input form-select">
+              <option value="" disabled selected>選択してください</option>
+              <optgroup label="── 収入 ──">
+                <option value="給与・役員報酬">給与・役員報酬</option>
+                <option value="事業売上">事業売上</option>
+                <option value="その他収入">その他収入</option>
+              </optgroup>
+              <optgroup label="── A箱（事業費用）──">
+                <option value="通信費（A箱）">通信費</option>
+                <option value="消耗品費（A箱）">消耗品費</option>
+                <option value="旅費交通費（A箱）">旅費交通費</option>
+                <option value="支払手数料（A箱）">支払手数料</option>
+                <option value="接待交際費（A箱）">接待交際費</option>
+                <option value="新聞図書費（A箱）">新聞図書費</option>
+              </optgroup>
+              <optgroup label="── B箱（個人費用）──">
+                <option value="食費（B箱）">食費</option>
+                <option value="日用品（B箱）">日用品</option>
+                <option value="趣味・娯楽（B箱）">趣味・娯楽</option>
+                <option value="自己研鑽（B箱）">自己研鑽</option>
+                <option value="衣服・美容（B箱）">衣服・美容</option>
+                <option value="健康・医療（B箱）">健康・医療</option>
+                <option value="交際費（B箱）">交際費</option>
+                <option value="交通費（B箱）">交通費</option>
+                <option value="保険（B箱）">保険</option>
+                <option value="投資（B箱）">投資</option>
+                <option value="その他（B箱）">その他</option>
+              </optgroup>
+              <optgroup label="── C箱（家族・固定費）──">
+                <option value="家族生活費（C箱）">家族生活費</option>
+                <option value="租税公課（C箱）">租税公課</option>
+                <option value="法定福利費（C箱）">法定福利費</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group" id="transferNotice" style="display:none;">
+            <div class="notice-box"><i class="fas fa-info-circle"></i><span>口座残高が減り、現金残高が増えます。</span></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputAmount"><i class="fas fa-yen-sign"></i> 金額</label>
+            <div class="amount-input-wrap">
+              <span class="amount-prefix">¥</span>
+              <input type="number" id="inputAmount" class="form-input amount-input" min="1" step="1" required />
+            </div>
+          </div>
+
+          <div class="form-group" id="paymentGroup">
+            <label class="form-label"><i class="fas fa-credit-card"></i> 支払い方法</label>
+            <div class="payment-group">
+              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="rakuten" checked /><span>💳 楽天ペイ</span></label>
+              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="paypay" /><span>💰 PayPay</span></label>
+              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="mercari" /><span>🛍 メルカリ</span></label>
+              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="credit_card" /><span>💳 クレカ</span></label>
+              <label class="payment-btn cash-pay"><input type="radio" name="payMethod" value="cash" /><span><i class="fas fa-money-bill-wave"></i> 現金</span></label>
+            </div>
+          </div>
+
+          <div class="form-group" id="incomeMethodGroup" style="display:none;">
+            <label class="form-label"><i class="fas fa-piggy-bank"></i> 受け取り方法</label>
+            <div class="payment-group">
+              <label class="payment-btn bank-pay"><input type="radio" name="incomeMethod" value="bank_in" checked /><span>🏦 銀行口座</span></label>
+              <label class="payment-btn cash-pay"><input type="radio" name="incomeMethod" value="cash" /><span>💵 現金受取</span></label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputMemo"><i class="fas fa-sticky-note"></i> メモ <span class="label-optional">任意</span></label>
+            <input type="text" id="inputMemo" class="form-input" maxlength="80" />
+          </div>
+
+          <div class="after-preview" id="afterPreview">
+            <div class="ap-title"><i class="fas fa-eye"></i> 入力後の残高プレビュー</div>
+            <div class="ap-row"><span>🏦 銀行口座</span><span class="ap-val bank-color" id="previewBank">¥—</span></div>
+            <div class="ap-row"><span>💵 現金</span><span class="ap-val cash-color" id="previewCash">¥—</span></div>
+          </div>
+
+          <button type="submit" class="btn-next">確認画面へ <i class="fas fa-arrow-right"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <div class="step-panel" id="panelConfirm">
+      <div class="confirm-card">
+        <div class="confirm-header">
+          <div class="confirm-type-badge" id="confirmTypeBadge"></div>
+          <div class="confirm-amount" id="confirmAmount"></div>
+        </div>
+        <div class="confirm-table">
+          <div class="confirm-row"><span class="confirm-key"><i class="fas fa-calendar"></i> 日付</span><span class="confirm-val" id="confirmDate"></span></div>
+          <div class="confirm-row"><span class="confirm-key"><i class="fas fa-tag"></i> 科目</span><span class="confirm-val" id="confirmCategory"></span></div>
+          <div class="confirm-row"><span class="confirm-key"><i class="fas fa-credit-card"></i> 支払</span><span class="confirm-val" id="confirmPayment"></span></div>
+          <div class="confirm-row" id="confirmMemoRow"><span class="confirm-key"><i class="fas fa-sticky-note"></i> メモ</span><span class="confirm-val" id="confirmMemo"></span></div>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn-back" id="backToInputBtn"><i class="fas fa-arrow-left"></i> 修正する</button>
+          <button class="btn-confirm" id="confirmSaveBtn"><i class="fas fa-check"></i> 確定する</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-panel" id="panelDone">
+      <div class="done-card">
+        <div class="done-icon"><i class="fas fa-check-circle"></i></div>
+        <h2 class="done-title">登録完了！</h2>
+        <div class="done-actions">
+          <button class="btn-add-more" id="addMoreBtn"><i class="fas fa-plus"></i> 続けて入力</button>
+          <a href="index.html" class="btn-go-dashboard"><i class="fas fa-chart-pie"></i> ダッシュボードへ</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="loadingOverlay" class="loading-overlay hidden"><div class="spinner"></div></div>
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="form.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+/* =============================================
+   summary.css  — 月次サマリーページ専用スタイル
+   ============================================= */
+
+/* ─── 月セレクターバー ─── */
+.summary-month-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--clr-surface);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  box-sizing: border-box;
+}
+.month-nav-btn-sm {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--clr-border);
+  background: var(--clr-bg);
+  color: var(--clr-text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: .88rem;
+  transition: background var(--tr), color var(--tr);
+  flex-shrink: 0;
+}
+.month-nav-btn-sm:hover {
+  background: var(--clr-balance-light);
+  color: var(--clr-balance-dark);
+}
+.summary-month-label {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--clr-text-primary);
+}
+.summary-month-jump {
+  background: var(--clr-bg);
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-size: .8rem;
+  font-family: var(--font);
+  color: var(--clr-text-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ─── KPI 4枚グリッド ─── */
+.summary-kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+.s-kpi-card {
+  background: var(--clr-surface);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid transparent;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+.s-kpi-card.income  { border-color: var(--clr-income); }
+.s-kpi-card.expense { border-color: var(--clr-expense); }
+.s-kpi-card.balance { border-color: var(--clr-balance); }
+.s-kpi-card.closing { border-color: var(--clr-forecast); }
+
+.s-kpi-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem;
+  flex-shrink: 0;
+}
+.income  .s-kpi-icon { background: var(--clr-income-light);  color: var(--clr-income-dark);  }
+.expense .s-kpi-icon { background: var(--clr-expense-light); color: var(--clr-expense-dark); }
+.balance .s-kpi-icon { background: var(--clr-balance-light); color: var(--clr-balance-dark); }
+.closing .s-kpi-icon { background: var(--clr-forecast-light); color: var(--clr-forecast-dark); }
+
+.s-kpi-body { min-width: 0; }
+.s-kpi-label { font-size: .68rem; color: var(--clr-text-secondary); margin-bottom: 2px; }
+.s-kpi-value {
+  font-size: .96rem; font-weight: 700;
+  color: var(--clr-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.s-kpi-value.small { font-size: .82rem; }
+
+/* ─── 汎用サマリーカード ─── */
+.summary-card {
+  background: var(--clr-surface);
+  border-radius: var(--radius-md);
+  padding: 14px 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.summary-card-header {
+  font-size: .78rem; font-weight: 700;
+  color: var(--clr-text-secondary);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.summary-card-header.abox-header { color: var(--clr-abox); }
+.summary-card-header.bbox-header { color: var(--clr-bbox); }
+.summary-card-header.cbox-header { color: var(--clr-cbox); }
+
+/* ─── 棚卸し差異グリッド ─── */
+.closing-diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.closing-diff-item {
+  background: var(--clr-surface2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.closing-diff-label { font-size: .7rem; color: var(--clr-text-muted); margin-bottom: 4px; }
+.closing-diff-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 4px;
+}
+.closing-diff-key   { font-size: .74rem; color: var(--clr-text-secondary); }
+.closing-diff-val   { font-size: .82rem; font-weight: 600; }
+.closing-diff-val.ok  { color: var(--clr-income-dark); }
+.closing-diff-val.ng  { color: var(--clr-expense-dark); }
+
+/* ─── ボックス別支出 ─── */
+.box-summary-list { display: flex; flex-direction: column; gap: 10px; }
+.box-summary-item {
+  background: var(--clr-surface2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.box-summary-top {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.box-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  font-size: .72rem; font-weight: 800;
+  flex-shrink: 0;
+}
+.box-badge.abox { background: var(--clr-abox-light); color: var(--clr-abox); }
+.box-badge.bbox { background: var(--clr-bbox-light); color: var(--clr-bbox); }
+.box-badge.cbox { background: var(--clr-cbox-light); color: var(--clr-cbox); }
+
+.box-summary-name  { font-size: .82rem; font-weight: 600; flex: 1; color: var(--clr-text-primary); }
+.box-summary-amounts {
+  display: flex; gap: 10px; align-items: center;
+  font-size: .8rem;
+}
+.box-actual  { font-weight: 700; color: var(--clr-text-primary); }
+.box-budget  { color: var(--clr-text-muted); }
+.box-bar-wrap {
+  width: 100%; height: 6px;
+  background: var(--clr-border);
+  border-radius: 99px; overflow: hidden;
+}
+.box-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+.box-bar.ok   { background: var(--clr-income);  }
+.box-bar.warn { background: var(--clr-forecast); }
+.box-bar.over { background: var(--clr-expense);  }
+.box-pct-label {
+  font-size: .7rem; color: var(--clr-text-muted);
+  margin-top: 4px; text-align: right;
+}
+
+/* ─── カテゴリ別詳細 ─── */
+.cat-detail-box { margin-bottom: 14px; }
+.cat-detail-box-title {
+  font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 5px;
+}
+.cat-detail-box-title.abox { color: var(--clr-abox); }
+.cat-detail-box-title.bbox { color: var(--clr-bbox); }
+.cat-detail-box-title.cbox { color: var(--clr-cbox); }
+
+.cat-detail-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--clr-border);
+}
+.cat-detail-row:last-child { border-bottom: none; }
+.cat-detail-name {
+  flex: 1; font-size: .8rem; color: var(--clr-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+}
+.cat-detail-bar-wrap {
+  flex: 0 0 80px; height: 5px;
+  background: var(--clr-border); border-radius: 99px; overflow: hidden;
+}
+.cat-detail-bar { height: 100%; border-radius: 99px; }
+.cat-detail-budget { font-size: .72rem; color: var(--clr-text-muted); min-width: 52px; text-align: right; }
+.cat-detail-actual { font-size: .82rem; font-weight: 600; min-width: 62px; text-align: right; }
+.cat-detail-actual.ok   { color: var(--clr-text-primary); }
+.cat-detail-actual.over { color: var(--clr-expense-dark); }
+
+/* ─── 棚卸し差異履歴 ─── */
+.closing-history-item {
+  display: flex; align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--clr-border);
+  gap: 10px;
+}
+.closing-history-item:last-child { border-bottom: none; }
+.ch-month { font-size: .78rem; font-weight: 600; min-width: 52px; color: var(--clr-text-primary); }
+.ch-status {
+  font-size: .7rem; padding: 2px 7px; border-radius: 99px;
+  font-weight: 600;
+}
+.ch-status.ok  { background: var(--clr-income-light);  color: var(--clr-income-dark);  }
+.ch-status.ng  { background: var(--clr-expense-light); color: var(--clr-expense-dark); }
+.ch-diff-bank { font-size: .76rem; color: var(--clr-bank-dark); flex: 1; }
+.ch-diff-cash { font-size: .76rem; color: var(--clr-cash-dark); flex: 1; }
+.ch-note { font-size: .72rem; color: var(--clr-text-muted); }
+
+/* ─── 空状態 ─── */
+.empty-msg {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--clr-text-muted);
+  font-size: .82rem;
+}
+.empty-msg i { font-size: 1.8rem; margin-bottom: 8px; display: block; }

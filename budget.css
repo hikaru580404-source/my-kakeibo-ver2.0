@@ -1,0 +1,186 @@
+/* =============================================
+   budget.css  — 予算管理ページ専用スタイル
+   ============================================= */
+
+/* ─── ボックスオーバービュー ─── */
+.budget-box-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.bov-card {
+  background: var(--clr-surface);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border-top: 3px solid transparent;
+}
+.bov-card.abox { border-color: var(--clr-abox); }
+.bov-card.bbox { border-color: var(--clr-bbox); }
+.bov-card.cbox { border-color: var(--clr-cbox); }
+.bov-label { font-size: .66rem; color: var(--clr-text-muted); margin-bottom: 3px; }
+.bov-budget { font-size: .76rem; font-weight: 600; color: var(--clr-text-secondary); }
+.bov-actual { font-size: .9rem;  font-weight: 700; color: var(--clr-text-primary); }
+.bov-pct {
+  font-size: .66rem; font-weight: 600; margin-top: 3px;
+  padding: 2px 6px; border-radius: 99px;
+}
+.bov-pct.ok   { background: var(--clr-income-light);  color: var(--clr-income-dark);  }
+.bov-pct.warn { background: var(--clr-forecast-light); color: var(--clr-forecast-dark); }
+.bov-pct.over { background: var(--clr-expense-light);  color: var(--clr-expense-dark);  }
+.bov-pct.na   { background: var(--clr-bg); color: var(--clr-text-muted); }
+
+/* ─── 操作ボタン ─── */
+.budget-actions {
+  display: flex; gap: 8px;
+  margin-bottom: 12px;
+  width: 100%; box-sizing: border-box;
+}
+.btn-budget-action {
+  flex: 1; padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none; cursor: pointer;
+  font-family: var(--font); font-size: .82rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: opacity var(--tr), transform var(--tr);
+}
+.btn-budget-action:active { transform: scale(.97); }
+.btn-budget-action.primary  { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; }
+.btn-budget-action.secondary { background: linear-gradient(135deg, #10b981, #34d399); color: #fff; }
+
+/* ─── ボックスバッジ（サマリーカードヘッダー内） ─── */
+.box-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 6px;
+  font-size: .72rem; font-weight: 800; flex-shrink: 0;
+}
+.box-badge.abox { background: var(--clr-abox-light); color: var(--clr-abox); }
+.box-badge.bbox { background: var(--clr-bbox-light); color: var(--clr-bbox); }
+.box-badge.cbox { background: var(--clr-cbox-light); color: var(--clr-cbox); }
+
+.summary-card-header.abox-header { color: var(--clr-abox); }
+.summary-card-header.bbox-header { color: var(--clr-bbox); }
+.summary-card-header.cbox-header { color: var(--clr-cbox); }
+
+.box-total-label {
+  margin-left: auto;
+  font-size: .8rem; font-weight: 700;
+  color: var(--clr-text-primary);
+}
+
+/* ─── カテゴリ別予算リスト ─── */
+.budget-category-list { display: flex; flex-direction: column; gap: 0; }
+.budget-cat-row {
+  display: flex; align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--clr-border);
+  gap: 8px;
+}
+.budget-cat-row:last-child { border-bottom: none; }
+
+.budget-cat-name {
+  flex: 1; font-size: .8rem; color: var(--clr-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+}
+.budget-cat-actual {
+  font-size: .78rem; color: var(--clr-text-muted);
+  min-width: 70px; text-align: right;
+  white-space: nowrap;
+}
+.budget-input-wrap {
+  display: flex; align-items: center; gap: 3px;
+  min-width: 100px;
+}
+.budget-yen { font-size: .8rem; color: var(--clr-text-secondary); }
+.budget-input {
+  width: 90px;
+  padding: 5px 7px;
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  background: var(--clr-surface2);
+  font-family: var(--font); font-size: .84rem;
+  text-align: right;
+  transition: border-color var(--tr), background var(--tr);
+  -moz-appearance: textfield;
+}
+.budget-input::-webkit-inner-spin-button,
+.budget-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.budget-input:focus {
+  outline: none;
+  border-color: var(--clr-balance);
+  background: var(--clr-balance-light);
+}
+.budget-bar-col {
+  flex: 0 0 60px;
+}
+.budget-bar-wrap {
+  width: 100%; height: 5px;
+  background: var(--clr-border); border-radius: 99px; overflow: hidden;
+}
+.budget-bar {
+  height: 100%; border-radius: 99px;
+  transition: width .4s ease, background .4s ease;
+}
+.budget-bar.ok   { background: var(--clr-income);  }
+.budget-bar.warn { background: var(--clr-forecast); }
+.budget-bar.over { background: var(--clr-expense);  }
+.budget-bar.na   { background: var(--clr-border); }
+.budget-pct {
+  font-size: .66rem; text-align: right;
+  margin-top: 2px;
+}
+.budget-pct.ok   { color: var(--clr-income-dark);   }
+.budget-pct.warn { color: var(--clr-forecast-dark); }
+.budget-pct.over { color: var(--clr-expense-dark);  }
+.budget-pct.na   { color: var(--clr-text-muted);    }
+
+/* ─── モーダル（共通） ─── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-box {
+  background: var(--clr-surface);
+  border-radius: var(--radius-lg);
+  padding: 22px 20px;
+  width: 100%; max-width: 360px;
+  box-shadow: var(--shadow-lg);
+}
+.modal-title {
+  font-size: 1rem; font-weight: 700;
+  color: var(--clr-text-primary);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.modal-body {
+  font-size: .84rem; line-height: 1.7;
+  color: var(--clr-text-secondary);
+  margin-bottom: 18px;
+}
+.modal-actions {
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+.btn-modal-cancel {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--clr-border);
+  background: var(--clr-surface2);
+  font-family: var(--font); font-size: .84rem;
+  cursor: pointer; color: var(--clr-text-secondary);
+}
+.btn-modal-confirm {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: var(--font); font-size: .84rem;
+  font-weight: 600; cursor: pointer;
+}
+.btn-modal-confirm.primary  { background: linear-gradient(135deg,#6366f1,#818cf8); color:#fff; }
+.btn-modal-confirm.danger   { background: linear-gradient(135deg,#ef4444,#f87171); color:#fff; }
