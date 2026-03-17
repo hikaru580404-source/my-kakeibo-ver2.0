@@ -1,16 +1,17 @@
 /* =============================================
-   app.js  — マイダッシュボード 完全版
+   app.js  — マイダッシュボード 完全版（デザイン刷新）
    ============================================= */
 'use strict';
 import { supabase, requireAuth } from './supabase-client.js';
 
 let currentUser = null;
-const TX_TABLE  = 'transactions';
-const BAL_TABLE = 'balance_settings';
+const TX_TABLE     = 'transactions';
+const BAL_TABLE    = 'balance_settings';
+const BUDGET_TABLE = 'budgets'; // 予算テーブルを追加
 
 const PM_LABEL = {
   rakuten: '楽天ペイ', paypay: 'PayPay', mercari: 'メルカリ',
-  credit_card: 'クレジットカード', cash: '現金', bank_in: '銀行口座', transfer_to_cash: 'ATM振替'
+  credit_card: 'クレカ', cash: '現金', bank_in: '銀行口座', transfer_to_cash: 'ATM振替'
 };
 
 const CATEGORY_BOX = {
@@ -19,8 +20,11 @@ const CATEGORY_BOX = {
   '家族生活費（C箱）':'C','租税公課（C箱）':'C','法定福利費（C箱）':'C'
 };
 
+const BOX_NAMES = { A:'A箱 事業経費', B:'B箱 個人消費', C:'C箱 固定費' };
+
 let allTransactions  = [];
 let balanceSettings  = [];
+let budgets          = []; // 予算データを保持する配列
 let currentYear      = new Date().getFullYear();
 let currentMonth     = new Date().getMonth() + 1;
 
@@ -75,7 +79,6 @@ function renderKPI() {
   document.getElementById('cashBalance').textContent = fmt(cashBalance);
   document.getElementById('totalBalance').textContent = fmt(bankBalance + cashBalance);
 
-  // 着地予測 (簡易モデル：現在の支出 + C箱の残り)
   const fcEl = document.getElementById('kpiForecast');
   const fcBan = document.getElementById('forecastBannerAmount');
   const fcSub = document.getElementById('forecastBannerSub');
@@ -131,43 +134,123 @@ function renderCharts() {
   }
 }
 
+// ==========================================
+// デザインを洗練させたサマリー描画処理
+// ==========================================
 function renderSummaries() {
   const key = `${currentYear}-${padZ(currentMonth)}`;
   const exps = allTransactions.filter(t => t.date && t.date.startsWith(key) && t.type==='expense');
 
-  // 支払い方法別
+  // 1. 支払い方法別 支出 (美しいバッジとプログレスバー)
   const mapP = {};
   exps.forEach(t => mapP[t.payment_method] = (mapP[t.payment_method]||0) + Number(t.amount));
   const pList = document.getElementById('paymentSummary');
   if (pList) {
     pList.innerHTML = '';
     const totalExp = exps.reduce((s,t)=>s+Number(t.amount),0) || 1;
+    
+    const pmStyle = {
+      rakuten: { bg: '#ffe4e4', text: 'var(--clr-rakuten)' },
+      paypay:  { bg: '#ffe4e8', text: 'var(--clr-paypay)' },
+      mercari: { bg: '#ffe8d6', text: 'var(--clr-mercari)' },
+      credit_card: { bg: '#ede9fe', text: '#8b5cf6' },
+      cash:    { bg: 'var(--clr-cash-light)', text: 'var(--clr-cash-dark)' },
+      bank_in: { bg: 'var(--clr-bank-light)', text: 'var(--clr-bank-dark)' }
+    };
+
     Object.entries(mapP).sort((a,b)=>b[1]-a[1]).forEach(([pm, amt]) => {
       const pct = (amt / totalExp * 100).toFixed(1);
-      pList.innerHTML += `<div class="summary-row"><span class="summary-name">${PM_LABEL[pm]||pm}</span><span class="summary-bar-wrap"><span class="summary-bar" style="width:${pct}%;"></span></span><span class="summary-val">${fmt(amt)}</span></div>`;
+      const style = pmStyle[pm] || { bg: '#f3f4f6', text: '#4b5563' };
+      
+      pList.innerHTML += `
+        <div class="payment-summary-item">
+          <span class="pm-badge" style="background:${style.bg}; color:${style.text};">${PM_LABEL[pm]||pm}</span>
+          <div class="pm-bar-wrap">
+            <div class="pm-bar" style="width:${pct}%; background:${style.text};"></div>
+          </div>
+          <span class="pm-amount">${fmt(amt)}</span>
+        </div>
+      `;
     });
   }
 
-  // カテゴリ別
-  const mapC = {};
-  exps.forEach(t => mapC[t.category] = (mapC[t.category]||0) + Number(t.amount));
-  const cList = document.getElementById('categorySummary');
-  if (cList) {
-    cList.innerHTML = '';
-    Object.entries(mapC).sort((a,b)=>b[1]-a[1]).forEach(([cat, amt]) => {
-      const box = CATEGORY_BOX[cat] ? `<span class="box-badge ${CATEGORY_BOX[cat].toLowerCase()}box">${CATEGORY_BOX[cat]}</span>` : '';
-      cList.innerHTML += `<div class="summary-row"><span class="summary-name">${box} ${cat.replace(/（[ABC]箱）$/,'')}</span><span class="summary-val">${fmt(amt)}</span></div>`;
-    });
-  }
-
-  // ボックス別消化 (予算連携なしの簡易版)
+  // 2. ボックス別予算消化 (予算データ連動・警告色対応)
   const mapB = { A:0, B:0, C:0 };
   exps.forEach(t => { if(CATEGORY_BOX[t.category]) mapB[CATEGORY_BOX[t.category]] += Number(t.amount); });
   const bList = document.getElementById('boxBudgetOverview');
   if (bList) {
     bList.innerHTML = '';
     ['A','B','C'].forEach(b => {
-      bList.innerHTML += `<div class="bov-card ${b.toLowerCase()}box"><div class="bov-label">${b}箱</div><div class="bov-actual">${fmt(mapB[b])}</div></div>`;
+      const actual = mapB[b];
+      const budget = budgets.filter(row => row.month === key && row.box === b).reduce((s, row) => s + Number(row.amount||0), 0);
+      const hasBudget = budget > 0;
+      const pct = hasBudget ? Math.min((actual / budget) * 100, 150) : 0;
+      const status = !hasBudget ? 'na' : pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
+      
+      let barColor = b === 'A' ? 'var(--clr-abox)' : b === 'B' ? 'var(--clr-bbox)' : 'var(--clr-cbox)';
+      if (status === 'over') barColor = 'var(--clr-expense)';
+      if (status === 'warn') barColor = 'var(--clr-forecast)';
+      if (!hasBudget) barColor = 'var(--clr-text-muted)';
+
+      bList.innerHTML += `
+        <div class="box-bud-card">
+          <div class="box-bud-top">
+            <span class="box-badge ${b.toLowerCase()}box">${b}</span>
+            <span class="box-bud-name">${BOX_NAMES[b]}</span>
+            <span class="box-bud-pct" style="color:${barColor}">${hasBudget ? pct.toFixed(1) + '%' : '─'}</span>
+          </div>
+          <div class="box-bud-bar-wrap">
+            <div class="box-bud-bar" style="width:${hasBudget ? pct : 0}%; background:${barColor};"></div>
+          </div>
+          <div class="box-bud-amounts">
+            <span class="box-bud-actual">${fmt(actual)}</span>
+            <span class="box-bud-remain" style="color:var(--clr-text-muted)">/</span>
+            <span class="box-bud-budget">${hasBudget ? fmt(budget) : '予算未設定'}</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // 3. 科目別 支出サマリー (バッジ・予算連動付きの多層レイアウト)
+  const mapC = {};
+  exps.forEach(t => mapC[t.category] = (mapC[t.category]||0) + Number(t.amount));
+  const cList = document.getElementById('categorySummary');
+  if (cList) {
+    cList.innerHTML = '';
+    Object.entries(mapC).sort((a,b)=>b[1]-a[1]).forEach(([cat, amt]) => {
+      const box = CATEGORY_BOX[cat];
+      const boxClass = box ? box.toLowerCase() + 'box' : '';
+      
+      const budRow = budgets.find(row => row.month === key && row.category === cat);
+      const budget = budRow ? Number(budRow.amount) : 0;
+      const hasBudget = budget > 0;
+      const pct = hasBudget ? Math.min((amt / budget) * 100, 150) : 0;
+      const status = !hasBudget ? 'na' : pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
+      
+      let barColor = box === 'A' ? 'var(--clr-abox)' : box === 'B' ? 'var(--clr-bbox)' : box === 'C' ? 'var(--clr-cbox)' : 'var(--clr-balance)';
+      if (status === 'over') barColor = 'var(--clr-expense)';
+      if (status === 'warn') barColor = 'var(--clr-forecast)';
+      if (!hasBudget) barColor = 'var(--clr-text-muted)';
+
+      cList.innerHTML += `
+        <div class="category-summary-item">
+          ${box ? `<span class="cat-badge ${boxClass}">${box}</span>` : ''}
+          <div class="cat-info">
+            <div class="cat-name-row">
+              <span class="cat-name">${cat.replace(/（[ABC]箱）$/,'')}</span>
+              <span class="cat-pct-badge ${status}">${hasBudget ? pct.toFixed(0) + '%' : ''}</span>
+            </div>
+            <div class="cat-bar-wrap">
+              <div class="cat-bar" style="width:${hasBudget ? pct : 0}%; background:${barColor};"></div>
+            </div>
+            <div class="cat-budget-row">
+              <span class="cat-actual-amt">${fmt(amt)}</span>
+              <span class="cat-budget-amt">${hasBudget ? `/ ${fmt(budget)}` : ''}</span>
+            </div>
+          </div>
+        </div>
+      `;
     });
   }
 }
@@ -221,7 +304,6 @@ function renderList() {
   document.getElementById('totalsCashExp').textContent = fmt(expC);
   document.getElementById('totalsBalance').textContent = fmt(inc - expB - expC);
 
-  // 削除イベント登録
   document.querySelectorAll('.btn-delete').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const id = e.currentTarget.dataset.id;
@@ -248,7 +330,6 @@ function renderDashboard() {
   renderSummaries();
   renderList();
   
-  // フィルター用カテゴリ一覧更新
   const filter = document.getElementById('filterCategory');
   if (filter) {
     const key = `${currentYear}-${padZ(currentMonth)}`;
@@ -282,7 +363,12 @@ async function init() {
   if (!currentUser) return;
 
   showLoading();
-  [allTransactions, balanceSettings] = await Promise.all([ fetchAll(TX_TABLE, 'date'), fetchAll(BAL_TABLE, 'month') ]);
+  // 予算データ(budgets)の取得を追加！
+  [allTransactions, balanceSettings, budgets] = await Promise.all([ 
+    fetchAll(TX_TABLE, 'date'), 
+    fetchAll(BAL_TABLE, 'month'),
+    fetchAll(BUDGET_TABLE, 'month') 
+  ]);
   renderDashboard();
   hideLoading();
 
@@ -295,7 +381,6 @@ async function init() {
   
   document.getElementById('filterCategory')?.addEventListener('change', renderList);
 
-  // タブ切替
   document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>b.classList.remove('active'));
