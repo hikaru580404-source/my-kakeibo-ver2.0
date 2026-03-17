@@ -1,5 +1,5 @@
 /* =============================================
-   summary.js  — 月次サマリーページ 完全版（全データ完全互換）
+   summary.js  — 月次サマリーページ 完全版（新12項目対応）
    ============================================= */
 'use strict';
 import { supabase, requireAuth } from './supabase-client.js';
@@ -10,20 +10,22 @@ const BAL_TABLE      = 'balance_settings';
 const CLOSING_TABLE  = 'monthly_closings';
 const BUDGET_TABLE   = 'budgets';
 
-// バッジ・集計用の定義（新旧統合）
+// バッジ・集計用の定義（新12項目対応）
 const CATEGORY_BOX = {
   '通信費（A箱）':'A','消耗品費（A箱）':'A','旅費交通費（A箱）':'A','支払手数料（A箱）':'A','接待交際費（A箱）':'A','新聞図書費（A箱）':'A',
-  '食費（B箱）':'B', '日用品（B箱）':'B', '趣味・娯楽（B箱）':'B', '自己研鑽（B箱）':'B', '衣服・美容（B箱）':'B', '健康・医療（B箱）':'B', '交際費（B箱）':'B', '交通費（B箱）':'B', '保険（B箱）':'B', '投資（B箱）':'B', 'その他（B箱）':'B',
+  
   '個人サブスク・通信費（B箱）':'B', '飲食費（ランチ・カフェ）（B箱）':'B', '美容・被服費（B箱）':'B', '趣味・娯楽費（B箱）':'B', '個人交際費・予備費（B箱）':'B',
+  '日用品（B箱）':'B', '自己研鑽（B箱）':'B', '健康・医療（B箱）':'B', '交通費（B箱）':'B', '保険（B箱）':'B', '投資（B箱）':'B', 'その他（B箱）':'B',
+  
   '家族生活費（C箱）':'C','租税公課（C箱）':'C','法定福利費（C箱）':'C'
 };
 
-// 一覧表示順の定義（旧項目もリストの末尾に追加し、内訳の計算漏れを防止）
+// 一覧表示順の定義
 const BOX_CATEGORIES = {
   A: ['通信費（A箱）','消耗品費（A箱）','旅費交通費（A箱）','支払手数料（A箱）','接待交際費（A箱）','新聞図書費（A箱）'],
   B: [
-    '食費（B箱）', '日用品（B箱）', '趣味・娯楽（B箱）', '自己研鑽（B箱）', '衣服・美容（B箱）', '健康・医療（B箱）', '交際費（B箱）', '交通費（B箱）', '保険（B箱）', '投資（B箱）', 'その他（B箱）',
-    '個人サブスク・通信費（B箱）', '飲食費（ランチ・カフェ）（B箱）', '美容・被服費（B箱）', '趣味・娯楽費（B箱）', '個人交際費・予備費（B箱）'
+    '個人サブスク・通信費（B箱）', '飲食費（ランチ・カフェ）（B箱）', '美容・被服費（B箱）', '趣味・娯楽費（B箱）', '個人交際費・予備費（B箱）',
+    '日用品（B箱）', '自己研鑽（B箱）', '健康・医療（B箱）', '交通費（B箱）', '保険（B箱）', '投資（B箱）', 'その他（B箱）'
   ],
   C: ['家族生活費（C箱）','租税公課（C箱）','法定福利費（C箱）']
 };
@@ -129,11 +131,12 @@ function renderCatDetail() {
   ['A','B','C'].forEach(box => {
     let html = `<div class="cat-detail-box"><div class="cat-detail-box-title ${box.toLowerCase()}box"><span>${box}箱</span></div>`;
     BOX_CATEGORIES[box].forEach(cat => {
-      // 実績も予算も0の旧項目は表示を省略し、画面をクリーンに保つロジック
       const actual = txs.filter(t => t.category === cat).reduce((s,t)=>s+Number(t.amount),0);
       const budRow = budgets.find(b => b.month === key && b.box === box && b.category === cat);
       const budget = budRow ? Number(budRow.amount) : 0;
-      if (actual === 0 && budget === 0 && cat.length > 8) return; 
+      
+      // 実績も予算も0の場合は表示しない（クリーンなUIを維持）
+      if (actual === 0 && budget === 0) return; 
 
       const hasBudget = budget > 0;
       const pct = hasBudget ? Math.min((actual/budget)*100, 150) : 0;
