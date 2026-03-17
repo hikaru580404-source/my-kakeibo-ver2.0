@@ -1,5 +1,5 @@
 /* =============================================
-   form.js — 入力専用ページ ロジック
+   form.js — 入力専用ページ ロジック 完全版
    ============================================= */
 'use strict';
 import { supabase, requireAuth } from './supabase-client.js';
@@ -22,6 +22,8 @@ let pendingData = null;
 
 const fmt  = (n) => '¥' + Math.abs(Math.round(n)).toLocaleString('ja-JP');
 function padZ(n) { return String(n).padStart(2, '0'); }
+function showLoading() { document.getElementById('loadingOverlay')?.classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loadingOverlay')?.classList.add('hidden'); }
 
 async function fetchAll(table, sortField = 'created_at') {
   if (!currentUser) return [];
@@ -29,7 +31,6 @@ async function fetchAll(table, sortField = 'created_at') {
   return data || [];
 }
 
-// 残高計算（クレジットカードは引かない）
 function calcCurrentBalances() {
   const now = new Date();
   const key = `${now.getFullYear()}-${padZ(now.getMonth() + 1)}`;
@@ -103,8 +104,59 @@ function onTypeChange() {
 
 function goToStep(step) {
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  
   document.getElementById({ 1:'panelInput', 2:'panelConfirm', 3:'panelDone' }[step]).classList.add('active');
+  for(let i=1; i<=step; i++) {
+    document.getElementById(`step${i}Dot`).classList.add('active');
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderTodayHistory() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const listEl = document.getElementById('todayList');
+  if (!listEl) return;
+
+  const todayTxs = allTransactions.filter(t => t.created_at && t.created_at.startsWith(todayStr)).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+  if (todayTxs.length === 0) {
+    listEl.innerHTML = '<div class="today-empty">今日の入力履歴はありません</div>';
+    return;
+  }
+
+  let html = '';
+  todayTxs.forEach(t => {
+    const color = t.type === 'income' ? 'plus' : t.type === 'expense' ? 'minus' : 'transfer';
+    const sign  = t.type === 'expense' ? '-' : '';
+    html += `
+      <div class="today-item">
+        <div class="today-item-main">
+          <div class="today-item-cat">${t.category.replace(/（[ABC]箱）$/,'')} <span class="today-item-pm">${PM_LABEL[t.payment_method]||t.payment_method}</span></div>
+          <div class="today-item-memo">${t.date} ${t.memo ? `| ${t.memo}` : ''}</div>
+        </div>
+        <div class="today-item-right">
+          <div class="today-item-amount ${color}">${sign}${fmt(t.amount)}</div>
+          <button class="today-delete-btn" data-id="${t.id}"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `;
+  });
+  listEl.innerHTML = html;
+
+  document.querySelectorAll('.today-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      if(confirm('この明細を削除しますか？')) {
+        showLoading();
+        await supabase.from(TX_TABLE).delete().eq('id', id);
+        allTransactions = await fetchAll(TX_TABLE, 'date');
+        renderTodayHistory();
+        updateQuickBalance();
+        hideLoading();
+      }
+    });
+  });
 }
 
 function handleGoToConfirm(e) {
@@ -130,9 +182,12 @@ function handleGoToConfirm(e) {
 
 async function handleConfirmSave() {
   if (!pendingData) return;
+  showLoading();
   await supabase.from(TX_TABLE).insert([pendingData]);
   allTransactions = await fetchAll(TX_TABLE, 'date');
   updateQuickBalance();
+  renderTodayHistory();
+  hideLoading();
   goToStep(3);
 }
 
@@ -140,6 +195,7 @@ async function init() {
   currentUser = await requireAuth();
   if (!currentUser) return;
 
+  showLoading();
   [allTransactions, balanceSettings] = await Promise.all([ fetchAll(TX_TABLE, 'date'), fetchAll(BAL_TABLE, 'month') ]);
   
   const t = new Date();
@@ -147,11 +203,12 @@ async function init() {
   
   updateQuickBalance();
   onTypeChange();
+  hideLoading();
 
   document.getElementById('inputForm').addEventListener('submit', handleGoToConfirm);
   document.getElementById('confirmSaveBtn').addEventListener('click', handleConfirmSave);
   document.getElementById('backToInputBtn').addEventListener('click', () => goToStep(1));
-  document.getElementById('addMoreBtn').addEventListener('click', () => { document.getElementById('inputForm').reset(); goToStep(1); });
+  document.getElementById('addMoreBtn').addEventListener('click', () => { document.getElementById('inputForm').reset(); onTypeChange(); goToStep(1); });
   document.querySelectorAll('input[name="txType"]').forEach(r => r.addEventListener('change', onTypeChange));
   document.querySelectorAll('input[name="payMethod"], input[name="incomeMethod"]').forEach(r => r.addEventListener('change', updateAfterPreview));
   document.getElementById('inputAmount').addEventListener('input', updateAfterPreview);
