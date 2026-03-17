@@ -18,43 +18,270 @@
 
 <header class="app-header">
   <div class="header-inner">
-    <div class="header-logo"><i class="fas fa-wallet"></i></div>
-    <div class="header-nav">
-      <a href="form.html" class="btn-form-link" title="収支を入力">
-        <i class="fas fa-pen-alt"></i><span>入力</span>
-      </a>
-      <a href="budget.html" class="btn-form-link" title="予算管理">
-        <i class="fas fa-bullseye"></i><span>予算</span>
-      </a>
-      <a href="summary.html" class="btn-form-link" title="月次サマリー">
-        <i class="fas fa-chart-bar"></i><span>分析</span>
-      </a>
-      <button class="btn-setup" id="openBalanceSetupBtn" title="残高繰越設定">
-        <i class="fas fa-sliders-h"></i>
-      </button>
+    <div class="header-row1">
+      <div class="header-logo"><i class="fas fa-wallet"></i></div>
+      <div class="header-nav">
+        <a href="form.html" class="btn-form-link" title="収支を入力">
+          <i class="fas fa-pen-alt"></i><span>入力</span>
+        </a>
+        <a href="budget.html" class="btn-form-link" title="予算管理">
+          <i class="fas fa-bullseye"></i><span>予算</span>
+        </a>
+        <a href="summary.html" class="btn-form-link" title="月次サマリー">
+          <i class="fas fa-chart-bar"></i><span>分析</span>
+        </a>
+        <button class="btn-setup" id="openBalanceSetupBtn" title="残高繰越設定">
+          <i class="fas fa-sliders-h"></i>
+        </button>
+      </div>
+    </div>
+    <div class="header-row2">
+      <button class="month-nav-btn" id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button>
+      <span class="month-label" id="currentMonthLabel"></span>
+      <button class="month-nav-btn" id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>
 </header>
 
 <main class="app-main">
-  <section class="kpi-section">
-    </section>
+  <div class="closing-banner" id="closingBanner" style="display:none;">
+    <div class="closing-banner-icon"><i class="fas fa-clipboard-check"></i></div>
+    <div class="closing-banner-body">
+      <div class="closing-banner-title">先月の棚卸しが未完了です</div>
+      <div class="closing-banner-sub" id="closingBannerSub">実際の残高を入力して先月を締めましょう</div>
+    </div>
+    <button class="closing-banner-btn" id="openClosingBtn">棚卸し<br>する</button>
+  </div>
 
-  <nav class="main-nav">
-    <button onclick="location.href='index.html'" class="nav-btn active">
-      <i class="fas fa-th-large"></i><span>ダッシュボード</span>
-    </button>
-    
-    <button onclick="location.href='form.html'" class="nav-btn primary">
-      <i class="fas fa-plus"></i><span>入力</span>
-    </button>
-    
-    <button onclick="location.href='index.html#tab-list'" class="nav-btn">
-      <i class="fas fa-list"></i><span>明細</span>
-    </button>
+  <section class="kpi-section">
+    <div class="kpi-card income">
+      <div class="kpi-icon"><i class="fas fa-arrow-down"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">今月の収入</div>
+        <div class="kpi-value" id="kpiIncome">¥0</div>
+      </div>
+    </div>
+    <div class="kpi-card expense">
+      <div class="kpi-icon"><i class="fas fa-arrow-up"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">今月の支出</div>
+        <div class="kpi-value" id="kpiExpense">¥0</div>
+      </div>
+    </div>
+    <div class="kpi-card balance">
+      <div class="kpi-icon"><i class="fas fa-coins"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">現在残高</div>
+        <div class="kpi-value" id="kpiBalance">¥0</div>
+      </div>
+    </div>
+    <div class="kpi-card forecast">
+      <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">月末着地予測</div>
+        <div class="kpi-value" id="kpiForecast">¥—</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="balance-detail-card">
+    <div class="balance-detail-row">
+      <div class="balance-detail-item bank">
+        <div class="balance-detail-icon"><i class="fas fa-university"></i></div>
+        <div class="balance-detail-body">
+          <div class="balance-detail-label">銀行口座残高</div>
+          <div class="balance-detail-value" id="bankBalance">¥0</div>
+          <div class="balance-detail-sub">
+            <span class="pay-tag rakuten">楽天ペイ</span>
+            <span class="pay-tag paypay">PayPay</span>
+            <span class="pay-tag mercari">メルカリ</span>
+          </div>
+        </div>
+      </div>
+      <div class="balance-divider"></div>
+      <div class="balance-detail-item cash">
+        <div class="balance-detail-icon"><i class="fas fa-money-bill-wave"></i></div>
+        <div class="balance-detail-body">
+          <div class="balance-detail-label">現金残高</div>
+          <div class="balance-detail-value" id="cashBalance">¥0</div>
+          <div class="balance-detail-sub">
+            <span class="pay-tag cash-tag">現金払い</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="balance-total-row">
+      <span class="balance-total-label"><i class="fas fa-sigma"></i> 合計残高</span>
+      <span class="balance-total-value" id="totalBalance">¥0</span>
+    </div>
+  </section>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="dashboard"><i class="fas fa-th-large"></i> ダッシュボード</button>
+    <button class="tab-btn" onclick="location.href='form.html'" style="background: var(--clr-balance-light); color: var(--clr-balance-dark); font-weight: 700; border: 1.5px solid var(--clr-balance);"><i class="fas fa-plus"></i> 入力</button>
+    <button class="tab-btn" data-tab="list"><i class="fas fa-list"></i> 明細</button>
   </nav>
 
-  </main>
+  <section class="tab-content active" id="tab-dashboard">
+    <div class="forecast-banner" id="forecastBanner">
+      <div class="forecast-banner-top">
+        <div class="forecast-banner-left">
+          <div class="forecast-banner-title"><i class="fas fa-bullseye"></i> 月末着地予測 <span class="fc-model-badge">固定費分離モデル</span></div>
+          <div class="forecast-banner-detail" id="forecastDetail">計算中...</div>
+        </div>
+        <div class="forecast-banner-right">
+          <div class="forecast-banner-amount" id="forecastBannerAmount">¥—</div>
+          <div class="forecast-banner-sub" id="forecastBannerSub"></div>
+        </div>
+      </div>
+      <div class="forecast-bar-wrap">
+        <div class="forecast-bar-track">
+          <div class="forecast-bar-fill" id="forecastBarFill"></div>
+        </div>
+        <div class="forecast-bar-labels">
+          <span>¥0</span><span id="forecastBarMid"></span><span id="forecastBarMax"></span>
+        </div>
+      </div>
+      <div id="forecastBreakdown" class="forecast-breakdown" style="display:none;"></div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fas fa-bar-chart"></i> 月次収支推移</div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fas fa-pie-chart"></i> 支出内訳（今月）</div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="pieChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card chart-card--mb">
+      <div class="chart-card-header"><i class="fas fa-credit-card"></i> 支払い方法別 支出</div>
+      <div id="paymentSummary" class="payment-summary-list"></div>
+    </div>
+
+    <div class="chart-card chart-card--mb">
+      <div class="chart-card-header">
+        <i class="fas fa-bullseye"></i> ボックス別 予算消化
+        <a href="budget.html" class="budget-link-btn">予算編集</a>
+      </div>
+      <div id="boxBudgetOverview" class="box-budget-overview"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-header"><i class="fas fa-tags"></i> 科目別 支出サマリー</div>
+      <div id="categorySummary" class="category-summary-list"></div>
+    </div>
+  </section>
+
+  <section class="tab-content" id="tab-list">
+    <div class="list-header-bar">
+      <h2 class="list-title"><i class="fas fa-list-alt"></i> 収支明細</h2>
+      <select id="filterCategory" class="list-filter-select">
+        <option value="">全科目</option>
+      </select>
+    </div>
+    <div id="transactionCards" class="transaction-cards"></div>
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <i class="fas fa-inbox"></i><p>データがありません</p>
+    </div>
+    <div class="list-totals" id="listTotals" style="display:none;">
+      <div class="totals-row"><span>収入合計</span><span class="totals-income" id="totalsIncome">¥0</span></div>
+      <div class="totals-row"><span>支出合計（銀行系）</span><span class="totals-bank-exp" id="totalsBankExp">¥0</span></div>
+      <div class="totals-row"><span>支出合計（現金）</span><span class="totals-cash-exp" id="totalsCashExp">¥0</span></div>
+      <div class="totals-row totals-balance-row"><span>差引残高（合計）</span><span class="totals-balance" id="totalsBalance">¥0</span></div>
+    </div>
+  </section>
+</main>
+
+<div class="modal-overlay" id="balanceSetupModal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon-setup"><i class="fas fa-sliders-h"></i></div>
+      <h3 class="modal-title">残高繰越を設定</h3>
+      <p class="modal-body">月初の口座残高と現金残高を入力してください。</p>
+    </div>
+    <form id="balanceSetupForm">
+      <div class="form-group">
+        <label class="form-label" for="setupMonth"><i class="fas fa-calendar"></i> 対象月</label>
+        <input type="month" id="setupMonth" class="form-input" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="setupBank"><i class="fas fa-university"></i> 銀行口座残高</label>
+        <div class="amount-input-wrap">
+          <span class="amount-prefix">¥</span>
+          <input type="number" id="setupBank" class="form-input amount-input" min="0" step="1" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="setupCash"><i class="fas fa-money-bill-wave"></i> 現金残高</label>
+        <div class="amount-input-wrap">
+          <span class="amount-prefix">¥</span>
+          <input type="number" id="setupCash" class="form-input amount-input" min="0" step="1" required />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-cancel" id="balanceSetupCancelBtn">キャンセル</button>
+        <button type="submit" class="btn-modal-save">保存する</button>
+      </div>
+      <div class="form-message" id="setupMessage"></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-icon"><i class="fas fa-trash-alt"></i></div>
+    <h3 class="modal-title">削除の確認</h3>
+    <p class="modal-body">このデータを削除します。<br>元に戻すことはできません。</p>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" id="deleteCancelBtn">キャンセル</button>
+      <button class="btn-modal-delete" id="deleteConfirmBtn">削除する</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="closingModal" style="display:none;">
+  <div class="modal-box modal-box--wide">
+    <div class="modal-header">
+      <div class="modal-icon-closing"><i class="fas fa-clipboard-check"></i></div>
+      <h3 class="modal-title">月末棚卸し</h3>
+      <p class="modal-body" id="closingModalSub">先月の実際の残高を入力して締め処理を行います。</p>
+    </div>
+    <form id="closingForm">
+      <div class="closing-calc-row">
+        <div class="closing-calc-item"><div class="closing-calc-label">📒 帳簿：銀行残高</div><div class="closing-calc-val" id="closingCalcBank">¥—</div></div>
+        <div class="closing-calc-item"><div class="closing-calc-label">📒 帳簿：現金残高</div><div class="closing-calc-val" id="closingCalcCash">¥—</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="closingActualBank"><i class="fas fa-university"></i> 実際の銀行残高</label>
+        <div class="amount-input-wrap"><span class="amount-prefix">¥</span><input type="number" id="closingActualBank" class="form-input amount-input" min="0" step="1" required /></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="closingActualCash"><i class="fas fa-money-bill-wave"></i> 実際の現金残高</label>
+        <div class="amount-input-wrap"><span class="amount-prefix">¥</span><input type="number" id="closingActualCash" class="form-input amount-input" min="0" step="1" required /></div>
+      </div>
+      <div class="closing-diff-preview" id="closingDiffPreview" style="display:none;">
+        <div class="closing-diff-title"><i class="fas fa-exchange-alt"></i> 差異（実績 − 帳簿）</div>
+        <div class="closing-diff-row"><span>銀行差異</span><span class="closing-diff-val" id="diffBank">—</span></div>
+        <div class="closing-diff-row"><span>現金差異</span><span class="closing-diff-val" id="diffCash">—</span></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="closingMemo"><i class="fas fa-sticky-note"></i> 棚卸しメモ <span class="label-opt">任意</span></label>
+        <input type="text" id="closingMemo" class="form-input" placeholder="差異の理由など" maxlength="100" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-cancel" id="closingCancelBtn">後で</button>
+        <button type="submit" class="btn-modal-closing">締め確定</button>
+      </div>
+      <div class="form-message" id="closingMessage"></div>
+    </form>
+  </div>
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="loading-spinner"></div></div>
+<div class="toast" id="toast"></div>
 
 <script type="module" src="app.js"></script>
 <script type="module" src="closing.js"></script>
