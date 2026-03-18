@@ -258,6 +258,8 @@ body {
 .bank-pay input[value="mercari"]:checked + span { background: #ffe8d6; border-color: var(--clr-mercari); color: var(--clr-mercari); }
 .cash-pay input[value="cash"]:checked    + span { background: var(--clr-cash-light); border-color: var(--clr-cash); color: var(--clr-cash-dark); }
 .bank-pay input[value="bank_in"]:checked + span { background: var(--clr-bank-light); border-color: var(--clr-bank); color: var(--clr-bank-dark); }
+.bank-pay input[value="credit_card"]:checked + span { background: var(--clr-balance-light); border-color: var(--clr-balance); color: var(--clr-balance-dark); }
+.bank-pay input[value="qr_code"]:checked + span { background: #dbeafe; border-color: var(--clr-bank); color: var(--clr-bank-dark); }
 
 /* 金額入力 */
 .amount-input-wrap { position: relative; }
