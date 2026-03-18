@@ -108,9 +108,7 @@
           <div class="form-group" id="paymentGroup">
             <label class="form-label"><i class="fas fa-credit-card"></i> 支払い方法</label>
             <div class="payment-group">
-              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="rakuten" checked /><span>💳 楽天ペイ</span></label>
-              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="paypay" /><span>💰 PayPay</span></label>
-              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="mercari" /><span>🛍 メルカリ</span></label>
+              <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="qr_code" checked /><span>📱 QRコード決済</span></label>
               <label class="payment-btn bank-pay"><input type="radio" name="payMethod" value="credit_card" /><span>💳 クレカ</span></label>
               <label class="payment-btn cash-pay"><input type="radio" name="payMethod" value="cash" /><span><i class="fas fa-money-bill-wave"></i> 現金</span></label>
             </div>
@@ -150,7 +148,7 @@
           <div class="confirm-row"><span class="confirm-key"><i class="fas fa-calendar"></i> 日付</span><span class="confirm-val" id="confirmDate"></span></div>
           <div class="confirm-row"><span class="confirm-key"><i class="fas fa-tag"></i> 科目</span><span class="confirm-val" id="confirmCategory"></span></div>
           <div class="confirm-row"><span class="confirm-key"><i class="fas fa-credit-card"></i> 支払</span><span class="confirm-val" id="confirmPayment"></span></div>
-          <div class="confirm-row" id="confirmMemoRow"><span class="confirm-key"><i class="fas fa-sticky-note"></i> メモ</span><span class="confirm-val" id="confirmMemo"></span></div>
+          <div class="confirm-row" id="confirmMemoRow"><span class="confirm-key"><i class=\"fas fa-sticky-note\"></i> メモ</span><span class="confirm-val" id="confirmMemo"></span></div>
         </div>
         <div class="confirm-actions">
           <button class="btn-back" id="backToInputBtn"><i class="fas fa-arrow-left"></i> 修正する</button>

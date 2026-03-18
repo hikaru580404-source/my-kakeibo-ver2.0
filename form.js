@@ -1,5 +1,5 @@
 /* =============================================
-   form.js — 入力専用ページ ロジック 完全版
+   form.js — 入力専用ページ ロジック 完全版（支払い方法カスタム化対応）
    ============================================= */
 'use strict';
 import { supabase, requireAuth } from './supabase-client.js';
@@ -8,9 +8,13 @@ let currentUser = null;
 const TX_TABLE  = 'transactions';
 const BAL_TABLE = 'balance_settings';
 
+// 決済方法のラベル定義を「3パターン」に集約
 const PM_LABEL = {
-  rakuten: '💳 楽天ペイ', paypay: '💰 PayPay', mercari: '🛍 メルカリ',
-  credit_card: '💳 クレジットカード', cash: '💵 現金', bank_in: '🏦 銀行口座', transfer_to_cash: '🏧 ATM振替',
+  qr_code: '📱 QRコード決済',
+  credit_card: '💳 クレジットカード', 
+  cash: '💵 現金', 
+  bank_in: '🏦 銀行口座', 
+  transfer_to_cash: '🏧 ATM振替'
 };
 const TYPE_LABEL = { income: '収入', expense: '支出', transfer: 'ATM振替' };
 
@@ -47,7 +51,7 @@ function calcCurrentBalances() {
     } else if (tx.type === 'expense') {
       if (tx.payment_method === 'cash') cash -= amt;
       else if (tx.payment_method === 'credit_card') { /* クレカは残高スルー */ }
-      else bank -= amt;
+      else bank -= amt; // QRコード決済はここに入り、銀行から引かれます
     } else if (tx.type === 'transfer') {
       bank -= amt; cash += amt;
     }
@@ -78,7 +82,7 @@ function updateAfterPreview() {
     } else if (type === 'expense') {
       if (method === 'cash') previewCash -= amt;
       else if (method === 'credit_card') { /* クレカはスルー */ }
-      else previewBank -= amt;
+      else previewBank -= amt; // QRコード決済はここに入り、銀行から引かれます
     } else if (type === 'transfer') {
       previewBank -= amt; previewCash += amt;
     }
@@ -90,7 +94,7 @@ function updateAfterPreview() {
 function getPaymentMethod(type) {
   if (type === 'transfer') return 'transfer_to_cash';
   if (type === 'income') return document.querySelector('input[name="incomeMethod"]:checked')?.value || 'bank_in';
-  return document.querySelector('input[name="payMethod"]:checked')?.value || 'rakuten';
+  return document.querySelector('input[name="payMethod"]:checked')?.value || 'qr_code';
 }
 
 function onTypeChange() {

@@ -1,5 +1,5 @@
 /* =============================================
-   summary.js  — 月次サマリーページ 完全版（新12項目対応）
+   summary.js  — 月次サマリーページ 完全版（支払い方法集約版）
    ============================================= */
 'use strict';
 import { supabase, requireAuth } from './supabase-client.js';
@@ -10,7 +10,7 @@ const BAL_TABLE      = 'balance_settings';
 const CLOSING_TABLE  = 'monthly_closings';
 const BUDGET_TABLE   = 'budgets';
 
-// バッジ・集計用の定義（新12項目対応）
+// バッジ・集計用の定義
 const CATEGORY_BOX = {
   '通信費（A箱）':'A','消耗品費（A箱）':'A','旅費交通費（A箱）':'A','支払手数料（A箱）':'A','接待交際費（A箱）':'A','新聞図書費（A箱）':'A',
   
@@ -20,7 +20,6 @@ const CATEGORY_BOX = {
   '家族生活費（C箱）':'C','租税公課（C箱）':'C','法定福利費（C箱）':'C'
 };
 
-// 一覧表示順の定義
 const BOX_CATEGORIES = {
   A: ['通信費（A箱）','消耗品費（A箱）','旅費交通費（A箱）','支払手数料（A箱）','接待交際費（A箱）','新聞図書費（A箱）'],
   B: [
@@ -33,8 +32,9 @@ const BOX_CATEGORIES = {
 const BOX_NAMES = { A:'A箱 事業経費', B:'B箱 個人消費', C:'C箱 固定費' };
 const BOX_COLORS = { A:'var(--clr-abox)', B:'var(--clr-bbox)', C:'var(--clr-cbox)' };
 
+// 支払い方法ラベル
 const PM_LABEL = {
-  rakuten: '楽天ペイ', paypay: 'PayPay', mercari: 'メルカリ',
+  qr_code: 'QRコード決済',
   credit_card: 'クレカ', cash: '現金', bank_in: '銀行口座', transfer_to_cash: 'ATM振替'
 };
 
@@ -134,8 +134,6 @@ function renderCatDetail() {
       const actual = txs.filter(t => t.category === cat).reduce((s,t)=>s+Number(t.amount),0);
       const budRow = budgets.find(b => b.month === key && b.box === box && b.category === cat);
       const budget = budRow ? Number(budRow.amount) : 0;
-      
-      // 実績も予算も0の場合は表示しない（クリーンなUIを維持）
       if (actual === 0 && budget === 0) return; 
 
       const hasBudget = budget > 0;
@@ -180,8 +178,9 @@ function renderPmTrendChart() {
   }
   const labels = months.map(d => `${d.m}月`);
   
-  const pmTypes = ['rakuten', 'paypay', 'mercari', 'credit_card', 'cash'];
-  const colors = ['#bf0000', '#ff0033', '#ff6600', '#8b5cf6', '#10b981'];
+  // 決済手段を「QR・クレカ・現金」の3つに絞り込み！
+  const pmTypes = ['qr_code', 'credit_card', 'cash'];
+  const colors = ['#0284c7', '#8b5cf6', '#10b981']; // 青(QR), 紫(クレカ), 緑(現金)
   
   const datasets = pmTypes.map((pm, idx) => {
     return {
@@ -232,7 +231,7 @@ function renderBalanceTrendChart() {
       } else if (tx.type === 'expense') {
         if (tx.payment_method === 'cash') cash -= amt;
         else if (tx.payment_method === 'credit_card') { /* クレカはスルー */ }
-        else bank -= amt;
+        else bank -= amt; // QR決済は銀行から引かれる
       } else if (tx.type === 'transfer') {
         bank -= amt; cash += amt;
       }

@@ -1,5 +1,5 @@
 /* =============================================
-   app.js  — マイダッシュボード 完全版（新12項目対応）
+   app.js  — マイダッシュボード 完全版（支払い方法集約版）
    ============================================= */
 'use strict';
 import { supabase, requireAuth } from './supabase-client.js';
@@ -10,7 +10,7 @@ const BAL_TABLE = 'balance_settings';
 const BUDGET_TABLE = 'budgets';
 
 const PM_LABEL = {
-  rakuten: '楽天ペイ', paypay: 'PayPay', mercari: 'メルカリ',
+  qr_code: 'QRコード決済',
   credit_card: 'クレジットカード', cash: '現金', bank_in: '銀行口座', transfer_to_cash: 'ATM振替'
 };
 
@@ -60,7 +60,7 @@ function calcMonthBalances(year, month) {
     } else if (tx.type === 'expense') {
       if (tx.payment_method === 'cash') cash -= amt;
       else if (tx.payment_method === 'credit_card') { /* クレカは残高スルー */ }
-      else bank -= amt;
+      else bank -= amt; // QRコード決済はここに入り銀行から引かれます
     } else if (tx.type === 'transfer') {
       bank -= amt; cash += amt;
     }
@@ -148,14 +148,15 @@ function renderSummaries() {
   if (pList) {
     pList.innerHTML = '';
     const totalExp = exps.reduce((s,t)=>s+Number(t.amount),0) || 1;
+    
+    // QRコード決済のカラー定義を追加・整理
     const pmStyle = {
-      rakuten: { bg: '#ffe4e4', text: 'var(--clr-rakuten)' },
-      paypay:  { bg: '#ffe4e8', text: 'var(--clr-paypay)' },
-      mercari: { bg: '#ffe8d6', text: 'var(--clr-mercari)' },
-      credit_card: { bg: '#ede9fe', text: '#8b5cf6' },
-      cash:    { bg: 'var(--clr-cash-light)', text: 'var(--clr-cash-dark)' },
-      bank_in: { bg: 'var(--clr-bank-light)', text: 'var(--clr-bank-dark)' }
+      qr_code:     { bg: '#e0f2fe', text: '#0284c7' }, // 爽やかなブルー
+      credit_card: { bg: '#ede9fe', text: '#8b5cf6' }, // 上品なパープル
+      cash:        { bg: 'var(--clr-cash-light)', text: 'var(--clr-cash-dark)' },
+      bank_in:     { bg: 'var(--clr-bank-light)', text: 'var(--clr-bank-dark)' }
     };
+    
     Object.entries(mapP).sort((a,b)=>b[1]-a[1]).forEach(([pm, amt]) => {
       const pct = (amt / totalExp * 100).toFixed(1);
       const style = pmStyle[pm] || { bg: '#f3f4f6', text: '#4b5563' };
