@@ -838,3 +838,77 @@ body {
   .chart-card { padding: 10px 8px; }
   .chart-card-header { font-size: .65rem; }
 }
+/* =============================================
+   認証画面 (login.html) 専用追加スタイル
+   ============================================= */
+.login-container { 
+  max-width: 400px; 
+  margin: 60px auto; 
+  padding: 30px 24px; 
+  background: #fff; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+}
+.login-title { 
+  text-align: center; 
+  margin-bottom: 24px; 
+  font-size: 1.5rem; 
+  color: #333; 
+}
+.login-form-group { 
+  margin-bottom: 16px; 
+}
+.login-label { 
+  display: block; 
+  margin-bottom: 6px; 
+  font-weight: 600; 
+  font-size: 0.9rem; 
+}
+.login-input { 
+  width: 100%; 
+  padding: 12px; 
+  border: 1px solid #ccc; 
+  border-radius: 6px; 
+  font-size: 1rem; 
+}
+.login-btn { 
+  width: 100%; 
+  padding: 14px; 
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+  color: #fff; 
+  border: none; 
+  border-radius: 6px; 
+  font-size: 1rem; 
+  font-weight: bold; 
+  cursor: pointer; 
+  margin-bottom: 15px; 
+  transition: opacity 0.2s;
+}
+.login-btn:hover {
+  opacity: 0.9;
+}
+.login-msg { 
+  text-align: center; 
+  font-size: 0.85rem; 
+  min-height: 20px; 
+  margin-bottom: 15px;
+}
+.login-msg.error {
+  color: #ef4444;
+}
+.login-msg.success {
+  color: #10b981;
+}
+.auth-toggle {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+.auth-toggle a {
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 500;
+}
+.auth-toggle a:hover {
+  text-decoration: underline;
+}
