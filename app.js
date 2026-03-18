@@ -355,8 +355,48 @@ async function init() {
     fetchAll(BAL_TABLE, 'month'),
     fetchAll(BUDGET_TABLE, 'month') 
   ]);
-  renderDashboard();
   hideLoading();
+
+  // 【追加】初回ログイン時の同意チェックロジック
+  const hasAgreed = currentUser.user_metadata?.agreed_to_terms;
+  const termsModal = document.getElementById('termsModal');
+  const termsCheck = document.getElementById('termsCheck');
+  const agreeBtn = document.getElementById('agreeBtn');
+
+  if (!hasAgreed && termsModal) {
+    termsModal.style.display = 'flex'; // 未同意ならモーダルを強制表示
+    
+    // チェックボックスの状態でボタンの有効/無効を切り替え
+    termsCheck.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        agreeBtn.style.opacity = '1';
+        agreeBtn.style.pointerEvents = 'auto';
+      } else {
+        agreeBtn.style.opacity = '0.5';
+        agreeBtn.style.pointerEvents = 'none';
+      }
+    });
+
+    // 同意ボタン押下時の処理（Supabaseにフラグを保存）
+    agreeBtn.addEventListener('click', async () => {
+      showLoading();
+      const { data, error } = await supabase.auth.updateUser({
+        data: { agreed_to_terms: true }
+      });
+      hideLoading();
+      
+      if (error) {
+        alert('エラーが発生しました: ' + error.message);
+      } else {
+        termsModal.style.display = 'none';
+        // 同意後に通常のダッシュボード描画を開始
+        renderDashboard(); 
+      }
+    });
+  } else {
+    // 既に同意済みのユーザーは即座にダッシュボードを描画
+    renderDashboard();
+  }
 
   document.getElementById('openBalanceSetupBtn')?.addEventListener('click', () => { document.getElementById('balanceSetupModal').style.display='flex'; });
   document.getElementById('balanceSetupCancelBtn')?.addEventListener('click', () => { document.getElementById('balanceSetupModal').style.display='none'; });

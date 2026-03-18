@@ -280,6 +280,29 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="termsModal" style="display:none; z-index: 9999;">
+  <div class="modal-box" style="max-width: 400px;">
+    <div class="modal-header">
+      <div class="modal-icon-setup" style="background: #e0f2fe; color: #0284c7;"><i class="fas fa-shield-alt"></i></div>
+      <h3 class="modal-title">データ取り扱いに関する同意</h3>
+    </div>
+    <div class="modal-body" style="font-size: .8rem; text-align: left; background: var(--clr-surface2); padding: 12px; border-radius: 8px; border: 1px solid var(--clr-border); height: 180px; overflow-y: auto;">
+      <p style="margin-bottom: 10px;"><strong>1. プライバシーの保護</strong><br>本システムに入力された財務データは、高度なセキュリティ設定によりユーザーごとに完全に隔離されています。管理者があなたの家計簿の内容を閲覧・取得することは一切ありません。</p>
+      <p style="margin-bottom: 10px;"><strong>2. 目的</strong><br>本システムは、個人の財務管理をサポートするためのプライベートなツールです。</p>
+      <p><strong>3. 免責事項</strong><br>予期せぬ障害によるデータの消失や、本システムの利用によって生じたいかなる損害についても、管理者は責任を負いかねます。データの定期的な確認はご自身で行ってください。</p>
+    </div>
+    
+    <label style="display: flex; align-items: flex-start; gap: 8px; margin: 16px 0; cursor: pointer; font-size: .85rem; font-weight: 600; color: var(--clr-text-primary);">
+      <input type="checkbox" id="termsCheck" style="margin-top: 3px; transform: scale(1.2);">
+      上記の内容を理解し、同意して利用を開始する
+    </label>
+
+    <div class="modal-actions">
+      <button class="btn-modal-save" id="agreeBtn" style="width: 100%; opacity: 0.5; pointer-events: none; transition: opacity 0.2s;">同意してはじめる</button>
+    </div>
+  </div>
+</div>
+
 <div class="loading-overlay hidden" id="loadingOverlay"><div class="loading-spinner"></div></div>
 <div class="toast" id="toast"></div>
 
