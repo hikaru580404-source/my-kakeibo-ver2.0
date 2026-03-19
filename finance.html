@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FINANCE LOG // DB</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="form.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .finance-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+    .error-text { color: #ef4444; font-weight: bold; }
+    .success-text { color: #10b981; font-weight: bold; }
+    .balance-card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    .balance-val { font-size: 2rem; font-family: 'Inter', sans-serif; font-weight: 700; margin: 10px 0; }
+    .discrepancy-box { padding: 15px; border-radius: 8px; text-align: center; font-size: 1.2rem; font-family: 'Inter'; font-weight: 700; }
+    .discrepancy-ok { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; }
+    .discrepancy-ng { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; }
+  </style>
+</head>
+<body>
+<header class="app-header">
+  <div class="header-inner">
+    <div class="logo">FINANCE LOG <span style="color:var(--clr-text-secondary); font-weight:400;">// 1-YEN DISCIPLINE</span></div>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <button id="logoutBtn" class="header-logout-btn"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+    <div class="section-title" style="margin-bottom: 0;">Financial Defense</div>
+    <nav class="tab-nav">
+      <button class="tab-btn" onclick="location.href='index.html'">Dashboard</button>
+      <button class="tab-btn active">Finance</button>
+    </nav>
+  </div>
+
+  <div class="balance-card">
+    <div class="kpi-label">前日時点の実残高 (Previous Balance)</div>
+    <div class="balance-val" id="prevBalance">¥ ---</div>
+  </div>
+
+  <form id="financeForm" class="card" style="padding: 24px;">
+    <div class="form-group">
+      <label class="form-label">記録日</label>
+      <input type="date" id="recordDate" class="form-input" required>
+    </div>
+
+    <div class="finance-grid">
+      <div class="form-group">
+        <label class="form-label" style="color: #38bdf8;">本日の収入 (Income)</label>
+        <input type="number" id="incomeVal" class="form-input" value="0" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="color: #ef4444;">本日の支出 (Expense)</label>
+        <input type="number" id="expenseVal" class="form-input" value="0" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" style="color: var(--clr-accent);">本日の実際の残高（口座＋現金の総額）</label>
+      <input type="number" id="actualBalance" class="form-input" required placeholder="1円の誤差もなく入力">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">内訳・誤差の原因分析メモ</label>
+      <textarea id="notes" class="form-input" rows="3" placeholder="支出の用途や、誤差が発生した原因のデバッグログ..."></textarea>
+    </div>
+
+    <div id="discrepancyArea" class="discrepancy-box discrepancy-ok" style="display: none; margin-bottom: 20px;">
+      誤差 (Discrepancy): <span id="discrepancyVal">¥ 0</span>
+    </div>
+
+    <button type="submit" class="btn-primary" id="btnSave">財務ログを記録する</button>
+  </form>
+</main>
+
+<script src="supabase-client.js"></script>
+<script src="finance.js"></script>
+</body>
+</html>
