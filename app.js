@@ -100,12 +100,13 @@ function renderKPI() {
   const income  = txs.filter(t => t.type === 'income') .reduce((s, t) => s + Number(t.amount), 0);
   const expense = txs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
 
-  document.getElementById('kpiIncome')?.textContent  != null && (document.getElementById('kpiIncome').textContent  = fmt(income));
-  document.getElementById('kpiExpense')?.textContent != null && (document.getElementById('kpiExpense').textContent = fmt(expense));
-  document.getElementById('kpiBalance')?.textContent != null && (document.getElementById('kpiBalance').textContent = fmt(bankBalance + cashBalance));
-  document.getElementById('bankBalance')?.textContent != null && (document.getElementById('bankBalance').textContent = fmt(bankBalance));
-  document.getElementById('cashBalance')?.textContent != null && (document.getElementById('cashBalance').textContent = fmt(cashBalance));
-  document.getElementById('totalBalance')?.textContent != null && (document.getElementById('totalBalance').textContent = fmt(bankBalance + cashBalance));
+  const safeSetKPI = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  safeSetKPI('kpiIncome',    fmt(income));
+  safeSetKPI('kpiExpense',   fmt(expense));
+  safeSetKPI('kpiBalance',   fmt(bankBalance + cashBalance));
+  safeSetKPI('bankBalance',  fmt(bankBalance));
+  safeSetKPI('cashBalance',  fmt(cashBalance));
+  safeSetKPI('totalBalance', fmt(bankBalance + cashBalance));
 
   const bal    = bankBalance + cashBalance;
   const fcEl   = document.getElementById('kpiForecast');
@@ -397,24 +398,39 @@ async function init() {
   hideLoading();
 
   // 利用規約同意チェック
+  // 注意: AdminAPIで作成されたユーザーはuser_metadataが空なので、
+  // termsModal要素がない場合や、既存ユーザーの場合はスキップしてダッシュボードを表示
   const hasAgreed = currentUser.user_metadata?.agreed_to_terms;
   const termsModal = document.getElementById('termsModal');
   const termsCheck = document.getElementById('termsCheck');
   const agreeBtn   = document.getElementById('agreeBtn');
 
-  if (!hasAgreed && termsModal) {
+  // termsModalが存在しない場合は即ダッシュボード表示（安全フォールバック）
+  if (!termsModal) {
+    renderDashboard();
+  } else if (!hasAgreed) {
     termsModal.style.display = 'flex';
-    termsCheck.addEventListener('change', (e) => {
-      agreeBtn.style.opacity       = e.target.checked ? '1'    : '0.5';
-      agreeBtn.style.pointerEvents = e.target.checked ? 'auto' : 'none';
-    });
-    agreeBtn.addEventListener('click', async () => {
-      showLoading();
-      const { error } = await supabase.auth.updateUser({ data: { agreed_to_terms: true } });
-      hideLoading();
-      if (error) { alert('エラー: ' + error.message); }
-      else { termsModal.style.display = 'none'; renderDashboard(); }
-    });
+    if (termsCheck) {
+      termsCheck.addEventListener('change', (e) => {
+        if (agreeBtn) {
+          agreeBtn.style.opacity       = e.target.checked ? '1'    : '0.5';
+          agreeBtn.style.pointerEvents = e.target.checked ? 'auto' : 'none';
+        }
+      });
+    }
+    if (agreeBtn) {
+      agreeBtn.addEventListener('click', async () => {
+        showLoading();
+        const { error } = await supabase.auth.updateUser({ data: { agreed_to_terms: true } });
+        hideLoading();
+        if (error) { alert('エラー: ' + error.message); }
+        else { termsModal.style.display = 'none'; renderDashboard(); }
+      });
+    } else {
+      // agreeBtn が見つからない場合は即表示（フェイルセーフ）
+      termsModal.style.display = 'none';
+      renderDashboard();
+    }
   } else {
     renderDashboard();
   }
