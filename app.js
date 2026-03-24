@@ -93,22 +93,38 @@ function calcMonthBalances(year, month) {
 }
 
 function renderKPI() {
-  const { bankBalance, cashBalance } = calcMonthBalances(currentYear, currentMonth);
   const key  = `${currentYear}-${padZ(currentMonth)}`;
   const txs  = allTransactions.filter(t => t.date && t.date.startsWith(key));
 
   const income  = txs.filter(t => t.type === 'income') .reduce((s, t) => s + Number(t.amount), 0);
   const expense = txs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
 
+  // 残高設定があるかチェック
+  const hasSetting = balanceSettings.some(s => s.month === key);
+  const { bankBalance, cashBalance } = calcMonthBalances(currentYear, currentMonth);
+
   const safeSetKPI = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   safeSetKPI('kpiIncome',    fmt(income));
   safeSetKPI('kpiExpense',   fmt(expense));
-  safeSetKPI('kpiBalance',   fmt(bankBalance + cashBalance));
-  safeSetKPI('bankBalance',  fmt(bankBalance));
-  safeSetKPI('cashBalance',  fmt(cashBalance));
-  safeSetKPI('totalBalance', fmt(bankBalance + cashBalance));
 
-  const bal    = bankBalance + cashBalance;
+  if (hasSetting) {
+    // 残高設定あり: 初期残高 ± 取引 で正確な残高を表示
+    safeSetKPI('kpiBalance',   fmt(bankBalance + cashBalance));
+    safeSetKPI('bankBalance',  fmt(bankBalance));
+    safeSetKPI('cashBalance',  fmt(cashBalance));
+    safeSetKPI('totalBalance', fmt(bankBalance + cashBalance));
+  } else {
+    // 残高設定なし: 収入 - 支出 の差引で表示し、注記を出す
+    const diff = income - expense;
+    safeSetKPI('kpiBalance',   fmt(diff));
+    safeSetKPI('bankBalance',  '未設定');
+    safeSetKPI('cashBalance',  '未設定');
+    safeSetKPI('totalBalance', fmt(diff));
+    // 残高設定を促すバナーを表示
+    showNoSettingBanner();
+  }
+
+  const bal    = hasSetting ? (bankBalance + cashBalance) : (income - expense);
   const fcEl   = document.getElementById('kpiForecast');
   const fcBan  = document.getElementById('forecastBannerAmount');
   const fcSub  = document.getElementById('forecastBannerSub');
@@ -118,6 +134,51 @@ function renderKPI() {
     fcSub.textContent  = bal >= 0 ? '黒字着地見込み' : '赤字着地見込み';
     fcSub.style.color  = bal >= 0 ? 'var(--clr-income-dark)' : 'var(--clr-expense-dark)';
   }
+
+  // 残高設定がある場合は案内バナーを非表示
+  if (hasSetting) hideNoSettingBanner();
+}
+
+function showNoSettingBanner() {
+  let banner = document.getElementById('noSettingBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'noSettingBanner';
+    banner.style.cssText = [
+      'background:linear-gradient(135deg,#fff7ed,#fef3c7)',
+      'border:1.5px solid #f59e0b',
+      'border-radius:12px',
+      'padding:12px 16px',
+      'margin:8px 0 12px',
+      'display:flex',
+      'align-items:center',
+      'gap:10px',
+      'font-size:.85rem',
+      'color:#92400e'
+    ].join(';');
+    banner.innerHTML = `
+      <i class="fas fa-exclamation-circle" style="color:#f59e0b;font-size:1.2rem;flex-shrink:0;"></i>
+      <span style="flex:1;"><strong>残高設定が未入力です。</strong><br>今月の口座・現金の繰越残高を設定すると残高が正確に表示されます。</span>
+      <button id="noSettingBannerBtn" style="background:#f59e0b;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;">今すぐ設定</button>
+    `;
+    // KPIセクションの直前に挿入
+    const kpiSection = document.querySelector('.kpi-section');
+    if (kpiSection) kpiSection.parentNode.insertBefore(banner, kpiSection);
+    // ボタンイベント
+    document.getElementById('noSettingBannerBtn')?.addEventListener('click', () => {
+      // 当月をデフォルトで設定
+      const monthInput = document.getElementById('setupMonth');
+      if (monthInput) monthInput.value = `${currentYear}-${padZ(currentMonth)}`;
+      document.getElementById('balanceSetupModal').style.display = 'flex';
+    });
+  } else {
+    banner.style.display = 'flex';
+  }
+}
+
+function hideNoSettingBanner() {
+  const banner = document.getElementById('noSettingBanner');
+  if (banner) banner.style.display = 'none';
 }
 
 function renderCharts() {
@@ -447,12 +508,40 @@ async function init() {
 
   // イベントバインド
   document.getElementById('openBalanceSetupBtn')?.addEventListener('click', () => {
+    // 現在表示中の月をデフォルトでセット
+    const monthInput = document.getElementById('setupMonth');
+    if (monthInput && !monthInput.value) {
+      monthInput.value = `${currentYear}-${padZ(currentMonth)}`;
+    }
+    // 既存設定があればその値を読み込む
+    const existingSetting = balanceSettings.find(s => s.month === `${currentYear}-${padZ(currentMonth)}`);
+    if (existingSetting) {
+      const bankInput = document.getElementById('setupBank');
+      const cashInput = document.getElementById('setupCash');
+      if (bankInput) bankInput.value = existingSetting.bank_balance;
+      if (cashInput) cashInput.value = existingSetting.cash_balance;
+    }
     document.getElementById('balanceSetupModal').style.display = 'flex';
   });
   document.getElementById('balanceSetupCancelBtn')?.addEventListener('click', () => {
     document.getElementById('balanceSetupModal').style.display = 'none';
   });
   document.getElementById('balanceSetupForm')?.addEventListener('submit', handleBalanceSetupSubmit);
+
+  // 設定モーダル: 対象月変更時に既存値を自動読み込み
+  document.getElementById('setupMonth')?.addEventListener('change', (e) => {
+    const month = e.target.value.slice(0, 7);
+    const existing = balanceSettings.find(s => s.month === month);
+    const bankInput = document.getElementById('setupBank');
+    const cashInput = document.getElementById('setupCash');
+    if (existing) {
+      if (bankInput) bankInput.value = existing.bank_balance;
+      if (cashInput) cashInput.value = existing.cash_balance;
+    } else {
+      if (bankInput) bankInput.value = '';
+      if (cashInput) cashInput.value = '';
+    }
+  });
 
   document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
     currentMonth--;
