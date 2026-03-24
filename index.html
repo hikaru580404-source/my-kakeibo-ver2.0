@@ -202,28 +202,85 @@
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-icon-setup"><i class="fas fa-sliders-h"></i></div>
-      <h3 class="modal-title">残高繰越を設定</h3>
-      <p class="modal-body">月初の口座残高と現金残高を入力してください。</p>
+      <h3 class="modal-title">残高設定</h3>
     </div>
+
+    <!-- モード切替タブ -->
+    <div class="setup-mode-tabs">
+      <button type="button" class="setup-mode-tab active" id="tabModeBegin" onclick="switchSetupMode('begin')">
+        <i class="fas fa-calendar-alt"></i> 月初残高を入力
+      </button>
+      <button type="button" class="setup-mode-tab" id="tabModeNow" onclick="switchSetupMode('now')">
+        <i class="fas fa-calculator"></i> 今日の残高から逆算
+      </button>
+    </div>
+
     <form id="balanceSetupForm">
       <div class="form-group">
         <label class="form-label" for="setupMonth"><i class="fas fa-calendar"></i> 対象月</label>
         <input type="month" id="setupMonth" class="form-input" required />
       </div>
-      <div class="form-group">
-        <label class="form-label" for="setupBank"><i class="fas fa-university"></i> 銀行口座残高</label>
-        <div class="amount-input-wrap">
-          <span class="amount-prefix">¥</span>
-          <input type="number" id="setupBank" class="form-input amount-input" min="0" step="1" required />
+
+      <!-- モードA: 月初残高を直接入力 -->
+      <div id="modeBeginFields">
+        <p class="setup-mode-desc">月の初日時点の残高を入力してください。</p>
+        <div class="form-group">
+          <label class="form-label" for="setupBank"><i class="fas fa-university"></i> 月初の銀行口座残高</label>
+          <div class="amount-input-wrap">
+            <span class="amount-prefix">¥</span>
+            <input type="number" id="setupBank" class="form-input amount-input" min="0" step="1" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setupCash"><i class="fas fa-money-bill-wave"></i> 月初の現金残高</label>
+          <div class="amount-input-wrap">
+            <span class="amount-prefix">¥</span>
+            <input type="number" id="setupCash" class="form-input amount-input" min="0" step="1" />
+          </div>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="setupCash"><i class="fas fa-money-bill-wave"></i> 現金残高</label>
-        <div class="amount-input-wrap">
-          <span class="amount-prefix">¥</span>
-          <input type="number" id="setupCash" class="form-input amount-input" min="0" step="1" required />
+
+      <!-- モードB: 今日の残高から逆算 -->
+      <div id="modeNowFields" style="display:none;">
+        <div class="setup-calc-info">
+          <i class="fas fa-info-circle"></i>
+          <span>今日時点の残高を入力すると、今月の取引実績から<strong>月初残高を自動計算</strong>して保存します。</span>
+        </div>
+        <div class="setup-calc-formula">
+          <div class="formula-row">
+            <span class="formula-label">月初残高</span>
+            <span class="formula-eq">=</span>
+            <span class="formula-val">今日の残高 − 今月の収入 + 今月の支出</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nowBank"><i class="fas fa-university"></i> 今日の銀行口座残高</label>
+          <div class="amount-input-wrap">
+            <span class="amount-prefix">¥</span>
+            <input type="number" id="nowBank" class="form-input amount-input" min="0" step="1" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nowCash"><i class="fas fa-money-bill-wave"></i> 今日の現金残高</label>
+          <div class="amount-input-wrap">
+            <span class="amount-prefix">¥</span>
+            <input type="number" id="nowCash" class="form-input amount-input" min="0" step="1" />
+          </div>
+        </div>
+        <!-- 逆算プレビュー -->
+        <div class="setup-calc-preview" id="setupCalcPreview" style="display:none;">
+          <div class="preview-title"><i class="fas fa-equals"></i> 逆算された月初残高</div>
+          <div class="preview-row">
+            <span><i class="fas fa-university"></i> 銀行</span>
+            <span id="previewBank" class="preview-val">¥—</span>
+          </div>
+          <div class="preview-row">
+            <span><i class="fas fa-money-bill-wave"></i> 現金</span>
+            <span id="previewCash" class="preview-val">¥—</span>
+          </div>
         </div>
       </div>
+
       <div class="modal-actions">
         <button type="button" class="btn-modal-cancel" id="balanceSetupCancelBtn">キャンセル</button>
         <button type="submit" class="btn-modal-save">保存する</button>

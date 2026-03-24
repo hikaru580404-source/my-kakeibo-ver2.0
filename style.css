@@ -715,6 +715,63 @@ body {
 .btn-modal-delete { flex:1; padding:11px; border-radius:var(--radius-sm); background:var(--clr-expense); border:none; font-family:var(--font); font-size:.83rem; font-weight:700; color:#fff; cursor:pointer; box-shadow:0 2px 8px rgba(239,68,68,.3); }
 .btn-modal-save   { flex:1; padding:11px; border-radius:var(--radius-sm); background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%); border:none; font-family:var(--font); font-size:.83rem; font-weight:700; color:#fff; cursor:pointer; box-shadow:0 2px 8px rgba(79,70,229,.3); }
 
+/* ---- 残高設定モーダル: モード切替タブ ---- */
+.setup-mode-tabs {
+  display: flex; gap: 6px; margin-bottom: 16px;
+}
+.setup-mode-tab {
+  flex: 1; padding: 9px 6px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--clr-border);
+  background: var(--clr-surface2); color: var(--clr-text-secondary);
+  font-family: var(--font); font-size: .78rem; font-weight: 600;
+  cursor: pointer; transition: all var(--tr); text-align: center;
+}
+.setup-mode-tab.active {
+  background: linear-gradient(135deg,#4f46e5,#7c3aed);
+  color: #fff; border-color: transparent;
+  box-shadow: 0 2px 8px rgba(79,70,229,.3);
+}
+.setup-mode-desc {
+  font-size: .78rem; color: var(--clr-text-secondary);
+  margin-bottom: 12px; line-height: 1.5;
+}
+
+/* ---- 逆算モード: 説明・計算式 ---- */
+.setup-calc-info {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: #e0f2fe; border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 12px;
+  font-size: .78rem; color: #0369a1; line-height: 1.5;
+}
+.setup-calc-info i { color: #0284c7; flex-shrink: 0; margin-top: 2px; }
+.setup-calc-formula {
+  background: var(--clr-surface2); border: 1px solid var(--clr-border);
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 14px;
+}
+.formula-row {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .75rem; color: var(--clr-text-secondary); flex-wrap: wrap;
+}
+.formula-label { font-weight: 700; color: var(--clr-balance-dark); }
+.formula-eq { font-weight: 700; color: var(--clr-text-primary); }
+.formula-val { color: var(--clr-text-secondary); }
+
+/* ---- 逆算プレビュー ---- */
+.setup-calc-preview {
+  background: linear-gradient(135deg,#f0fdf4,#dcfce7);
+  border: 1.5px solid var(--clr-income);
+  border-radius: 10px; padding: 12px 14px; margin-top: 12px;
+}
+.preview-title {
+  font-size: .78rem; font-weight: 700; color: var(--clr-income-dark);
+  margin-bottom: 8px;
+}
+.preview-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .82rem; color: var(--clr-text-secondary); padding: 3px 0;
+}
+.preview-val { font-weight: 700; color: var(--clr-income-dark); }
+
 /* =============================================
    Loading / Toast
    ============================================= */

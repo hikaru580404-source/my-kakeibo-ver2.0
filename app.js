@@ -422,12 +422,82 @@ function renderDashboard() {
   }
 }
 
+// 設定モード: 'begin'=月初残高直接入力 / 'now'=今日残高から逆算
+let setupMode = 'begin';
+
+window.switchSetupMode = function(mode) {
+  setupMode = mode;
+  document.getElementById('tabModeBegin').classList.toggle('active', mode === 'begin');
+  document.getElementById('tabModeNow').classList.toggle('active', mode === 'now');
+  document.getElementById('modeBeginFields').style.display = mode === 'begin' ? 'block' : 'none';
+  document.getElementById('modeNowFields').style.display   = mode === 'now'   ? 'block' : 'none';
+  // 逆算プレビューを更新
+  if (mode === 'now') updateCalcPreview();
+};
+
+function updateCalcPreview() {
+  const month   = (document.getElementById('setupMonth')?.value || '').slice(0, 7);
+  const nowBank = Number(document.getElementById('nowBank')?.value) || 0;
+  const nowCash = Number(document.getElementById('nowCash')?.value) || 0;
+  if (!month) return;
+
+  // 対象月の収入・支出・振替を集計
+  const txs = allTransactions.filter(t => t.date && t.date.startsWith(month));
+  let netBank = 0, netCash = 0;
+  for (const tx of txs) {
+    const amt = Number(tx.amount);
+    if (tx.type === 'income') {
+      if (tx.payment_method === 'cash') netCash += amt; else netBank += amt;
+    } else if (tx.type === 'expense') {
+      if (tx.payment_method === 'cash') netCash -= amt;
+      else if (tx.payment_method !== 'credit_card') netBank -= amt;
+    } else if (tx.type === 'transfer') {
+      netBank -= amt; netCash += amt;
+    }
+  }
+
+  // 逆算: 月初残高 = 今日残高 - 取引願差
+  const calcBank = nowBank - netBank;
+  const calcCash = nowCash - netCash;
+
+  const preview = document.getElementById('setupCalcPreview');
+  const pBank   = document.getElementById('previewBank');
+  const pCash   = document.getElementById('previewCash');
+  if (preview) preview.style.display = 'block';
+  if (pBank)   pBank.textContent = fmt(calcBank);
+  if (pCash)   pCash.textContent = fmt(calcCash);
+}
+
 async function handleBalanceSetupSubmit(e) {
   e.preventDefault();
   const rawMonth = document.getElementById('setupMonth').value;
   const month    = rawMonth.slice(0, 7);
-  const bank     = Number(document.getElementById('setupBank').value) || 0;
-  const cash     = Number(document.getElementById('setupCash').value) || 0;
+
+  let bank, cash;
+  if (setupMode === 'now') {
+    // 今日残高から月初残高を逆算
+    const nowBank = Number(document.getElementById('nowBank')?.value) || 0;
+    const nowCash = Number(document.getElementById('nowCash')?.value) || 0;
+    const txs = allTransactions.filter(t => t.date && t.date.startsWith(month));
+    let netBank = 0, netCash = 0;
+    for (const tx of txs) {
+      const amt = Number(tx.amount);
+      if (tx.type === 'income') {
+        if (tx.payment_method === 'cash') netCash += amt; else netBank += amt;
+      } else if (tx.type === 'expense') {
+        if (tx.payment_method === 'cash') netCash -= amt;
+        else if (tx.payment_method !== 'credit_card') netBank -= amt;
+      } else if (tx.type === 'transfer') {
+        netBank -= amt; netCash += amt;
+      }
+    }
+    bank = nowBank - netBank;
+    cash = nowCash - netCash;
+  } else {
+    // 月初残高を直接入力
+    bank = Number(document.getElementById('setupBank')?.value) || 0;
+    cash = Number(document.getElementById('setupCash')?.value) || 0;
+  }
 
   const existing = balanceSettings.find(s => s.month === month);
   const payload  = { user_id: currentUser.id, month, bank_balance: bank, cash_balance: cash };
@@ -527,6 +597,13 @@ async function init() {
     document.getElementById('balanceSetupModal').style.display = 'none';
   });
   document.getElementById('balanceSetupForm')?.addEventListener('submit', handleBalanceSetupSubmit);
+
+  // 逆算モード: 入力変更時にプレビューをリアルタイム更新
+  ['nowBank', 'nowCash', 'setupMonth'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      if (setupMode === 'now') updateCalcPreview();
+    });
+  });
 
   // 設定モーダル: 対象月変更時に既存値を自動読み込み
   document.getElementById('setupMonth')?.addEventListener('change', (e) => {
