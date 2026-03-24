@@ -2,26 +2,149 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ログイン・新規登録 - マイ家計簿</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4f46e5">
+  <title>ログイン - マイ家計簿</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* iOS Safari: background-attachment:fixed 回避 */
+    html {
+      min-height: -webkit-fill-available;
+      background: #f0f2f7;
+    }
+    body {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      background: #f0f2f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 28px 32px;
+      box-shadow: 0 4px 24px rgba(79,70,229,.12);
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 2rem;
+      color: #4f46e5;
+    }
+    .login-title {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 24px;
+    }
+    .login-form-group {
+      margin-bottom: 16px;
+    }
+    .login-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    /* iOS自動ズーム防止: font-size >= 16px 必須 */
+    .login-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      outline: none;
+      background: #f9fafb;
+      color: #111827;
+      transition: border-color .2s;
+      -webkit-appearance: none;
+    }
+    .login-input:focus {
+      border-color: #4f46e5;
+      background: #fff;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+      letter-spacing: 0.03em;
+      transition: opacity .2s;
+    }
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .login-msg {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      text-align: center;
+      min-height: 20px;
+    }
+    .login-msg.error   { color: #dc2626; }
+    .login-msg.success { color: #059669; }
+    .auth-toggle {
+      text-align: center;
+      margin-top: 16px;
+    }
+    .auth-toggle a {
+      font-size: 0.82rem;
+      color: #4f46e5;
+      text-decoration: none;
+    }
+  </style>
 </head>
-<body style="background: #f0f2f7;">
+<body>
   <div class="login-container">
+    <div class="login-logo"><i class="fas fa-wallet"></i></div>
     <h1 class="login-title" id="authTitle">マイ家計簿 ログイン</h1>
-    
-    <form id="authForm">
+
+    <form id="authForm" novalidate>
       <div class="login-form-group">
-        <label class="login-label" for="email">メールアドレス</label>
-        <input type="email" id="email" class="login-input" required>
+        <label class="login-label" for="email"><i class="fas fa-envelope"></i> メールアドレス</label>
+        <input
+          type="email"
+          id="email"
+          class="login-input"
+          placeholder="example@email.com"
+          autocomplete="email"
+          inputmode="email"
+          required
+        >
       </div>
       <div class="login-form-group">
-        <label class="login-label" for="password">パスワード</label>
-        <input type="password" id="password" class="login-input" minlength="6" placeholder="6文字以上" required>
+        <label class="login-label" for="password"><i class="fas fa-lock"></i> パスワード</label>
+        <input
+          type="password"
+          id="password"
+          class="login-input"
+          placeholder="6文字以上"
+          autocomplete="current-password"
+          minlength="6"
+          required
+        >
       </div>
-      
-      <button type="submit" class="login-btn" id="authSubmitBtn">ログイン</button>
-      
+
+      <button type="submit" class="login-btn" id="authSubmitBtn">
+        <i class="fas fa-sign-in-alt"></i> ログイン
+      </button>
+
       <div id="authMsg" class="login-msg"></div>
     </form>
 
