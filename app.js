@@ -385,6 +385,16 @@ async function init() {
   currentUser = await requireAuth();
   if (!currentUser) return;
 
+  // ログアウトボタン
+  document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    if (confirm('ログアウトしますか？')) {
+      await supabase.auth.signOut();
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.replace('login.html');
+    }
+  });
+
   showLoading();
   try {
     [allTransactions, balanceSettings, budgets] = await Promise.all([
